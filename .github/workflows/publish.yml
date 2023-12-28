@@ -5,8 +5,12 @@ on:
     branches:
       - release
 
-# This is the example from the readme.
-# On each push to the `release` branch it will create or update a GitHub release, build your app, and upload the artifacts to the release.
+  workflow_call:
+    inputs:
+      build-artifacts:
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   publish-tauri:
