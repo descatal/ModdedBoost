@@ -1,4 +1,4 @@
-name: Build
+name: build
 
 on: 
   pull_request:
@@ -10,8 +10,15 @@ on:
       - LICENSE
       - README.md
       
+  workflow_call:
+    inputs:
+      build-artifacts:
+        type: boolean
+        required: true
+        default: false
+      
 jobs:
-  test-tauri:
+  build-tauri:
     strategy:
       fail-fast: false
       matrix:
