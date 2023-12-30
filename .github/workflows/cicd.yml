@@ -16,6 +16,6 @@ permissions:
 jobs:
 
   build:
-    uses: ./.github/workflows/publish.yml
+    uses: ./.github/workflows/build.yml
     with:
       build-artifacts: true
