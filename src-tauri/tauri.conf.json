@@ -36,9 +36,9 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "moddedboost",
-        "width": 800,
-        "height": 600
+        "title": "Modded Boost Launcher",
+        "width": 540,
+        "height": 580
       }
     ]
   }
