@@ -3,5 +3,8 @@
   "Game Version": "游戏版本",
   "Mod Version": "Mod版本",
   "Launch": "运行",
-  "Check for updates": "检测更新"
+  "Check for updates": "检测更新",
+  "Apply updates": "安装更新",
+  "RPCS3 Directory Changed": "RPCS3目录变更",
+  "Processing new directory": "処理中"
 }

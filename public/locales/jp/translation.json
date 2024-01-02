@@ -3,5 +3,8 @@
   "Game Version": "ゲームバージョン",
   "Mod Version": "MODバージョン",
   "Launch": "起動",
-  "Check for updates": "アップデートの確認"
+  "Check for updates": "アップデートの確認",
+  "Apply updates": "アップデートを適用",
+  "RPCS3 Directory Changed": "RPCS3ディレクトリが変更されました",
+  "Processing new directory": "处理中"
 }
