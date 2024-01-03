@@ -12,13 +12,15 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 
 const launchGame = (rpcs3Path: String) => {
-  invoke("check_full_boost_game_version", { fullPath: rpcs3Path });
+  invoke("auto_find_path_and_run_game", {
+    fullPath: rpcs3Path + `\\rpcs3.exe`,
+  });
 };
 
-function Config({ title, rpcs3Path }: { title: string, rpcs3Path: string }) {
+function Config({ title, rpcs3Path }: { title: string; rpcs3Path: string }) {
   const { t } = useTranslation();
   const [isModVersionSpinning, setModVersionSpinning] = useState(false);
-  
+
   const handleClick = () => {
     // Your click handling logic here
     console.log("Button clicked!");

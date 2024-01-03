@@ -31,6 +31,8 @@ export default function Landing() {
   const [ rpcs3Path, setRpcs3Path] = useState("");
 
   useEffect(() => {
+    //init rpcs3Path by localStorage
+    setRpcs3Path(localStorage.getItem("rpcs3Path") || "");
     const subscribeDirectoryChangedEvent = async () => {
       await listen<FullBoostVersions>('directory-changed', (event) => {
         if (!event.payload.bljs && !event.payload.npjb)
@@ -68,6 +70,7 @@ export default function Landing() {
       
     toast(i18n.t("RPCS3 Directory Changed"));
     invoke("check_full_boost_game_version", { fullPath: rpcs3Path });
+    localStorage.setItem("rpcs3Path", rpcs3Path);
   }
   
   return (
