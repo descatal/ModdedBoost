@@ -8,18 +8,31 @@ import {
 import { Label } from "@/components/ui/label.tsx";
 import { useTranslation } from "react-i18next";
 import HoverIconButton from "@/components/common/hover-icon-button.tsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import { FullBoostVersions } from "./landing";
 
-const launchGame = (rpcs3Path: String) => {
+const launchGame = (rpcs3Path: String, gameType: "bljs" | "npjb") => {
   invoke("auto_find_path_and_run_game", {
-    fullPath: rpcs3Path + `\\rpcs3.exe`,
+    fullPath: rpcs3Path,
+    gameType: gameType,
   });
 };
 
-function Config({ title, rpcs3Path }: { title: string; rpcs3Path: string }) {
+function Config({
+  title,
+  rpcs3Path,
+  gameType,
+  fullBoostVersionsExists,
+}: {
+  title: string;
+  rpcs3Path: string;
+  gameType: "bljs" | "npjb";
+  fullBoostVersionsExists: FullBoostVersions;
+}) {
   const { t } = useTranslation();
   const [isModVersionSpinning, setModVersionSpinning] = useState(false);
+  const [disabledLunchButton, setDisabledLunchButton] = useState(false);
 
   const handleClick = () => {
     // Your click handling logic here
@@ -33,6 +46,12 @@ function Config({ title, rpcs3Path }: { title: string; rpcs3Path: string }) {
       setModVersionSpinning(false);
     }, 1000);
   };
+
+  useEffect(() => {
+    if (fullBoostVersionsExists[gameType] == false) {
+      setDisabledLunchButton(true);
+    }
+  }, [fullBoostVersionsExists]);
 
   return (
     <div>
@@ -66,7 +85,11 @@ function Config({ title, rpcs3Path }: { title: string; rpcs3Path: string }) {
               />
             </div>
           </div>
-          <Button className="w-full" onClick={() => launchGame(rpcs3Path)}>
+          <Button
+            className="w-full"
+            onClick={() => launchGame(rpcs3Path, gameType)}
+            disabled={disabledLunchButton}
+          >
             {t("Launch")} {title}
             <RocketIcon className="w-3 h-3 ml-2" />
           </Button>

@@ -13,66 +13,69 @@ import { LanguageToggle } from "@/components/common/language-toggle.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { useTranslation } from "react-i18next";
-import { open } from '@tauri-apps/api/dialog';
-import {SetStateAction, useEffect, useState} from "react";
-import {desktopDir} from "@tauri-apps/api/path";
-import {invoke} from "@tauri-apps/api/tauri";
-import {listen} from "@tauri-apps/api/event";
+import { open } from "@tauri-apps/api/dialog";
+import { SetStateAction, useEffect, useState } from "react";
+import { desktopDir } from "@tauri-apps/api/path";
+import { invoke } from "@tauri-apps/api/tauri";
+import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 
 // same type as payload
-type FullBoostVersions = {
-  bljs: boolean,
-  npjb: boolean,
+export type FullBoostVersions = {
+  bljs: boolean;
+  npjb: boolean;
 };
 
 export default function Landing() {
   const { t, i18n } = useTranslation();
-  const [ rpcs3Path, setRpcs3Path] = useState("");
+  const [rpcs3Path, setRpcs3Path] = useState("");
+  const [fullBoostVersionsExists, setFullBoostVersionsExists] =
+    useState<FullBoostVersions>({
+      bljs: false,
+      npjb: false,
+    });
 
   useEffect(() => {
     //init rpcs3Path by localStorage
     setRpcs3Path(localStorage.getItem("rpcs3Path") || "");
     const subscribeDirectoryChangedEvent = async () => {
-      await listen<FullBoostVersions>('directory-changed', (event) => {
-        if (!event.payload.bljs && !event.payload.npjb)
+      await listen<FullBoostVersions>("directory-changed", (event) => {
+        setFullBoostVersionsExists(event.payload);
+        if (!event.payload.bljs && !event.payload.npjb) {
           toast.error(i18n.t("No games found!"));
-        else
+        } else {
           toast.success(i18n.t("Games found!"));
+        }
       });
-    }
-    subscribeDirectoryChangedEvent()
-      .catch(console.error);
-  }, [])
-  
+    };
+    subscribeDirectoryChangedEvent().catch(console.error);
+  }, []);
+
   useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-      await processDirectory();
-    }, 1000);
-    return () => clearTimeout(delayDebounceFn);
+    processDirectory();
   }, [rpcs3Path]);
-  
-  const handleDirectoryChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+
+  const handleDirectoryChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
     setRpcs3Path(event.target.value);
   };
 
   const changeDirectory = async () => {
     const selectedDirectory = await selectDirectoryDialog();
-    if (!selectedDirectory)
-      return;
+    if (!selectedDirectory) return;
     await processDirectory();
     setRpcs3Path(selectedDirectory);
   };
 
   const processDirectory = async () => {
-    if (!rpcs3Path)
-      return;
-      
+    if (!rpcs3Path) return;
+
     toast(i18n.t("RPCS3 Directory Changed"));
     invoke("check_full_boost_game_version", { fullPath: rpcs3Path });
     localStorage.setItem("rpcs3Path", rpcs3Path);
-  }
-  
+  };
+
   return (
     <main key="1" className="min-h-screen py-12 px-4 md:py-24 md:px-6 lg:py-32">
       <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
@@ -113,10 +116,20 @@ export default function Landing() {
                 <TabsTrigger value="npjb">NPJB00512</TabsTrigger>
               </TabsList>
               <TabsContent value="bljs">
-                <Config title={"BLJS10250"} rpcs3Path={rpcs3Path} />
+                <Config
+                  title={"BLJS10250"}
+                  rpcs3Path={rpcs3Path}
+                  gameType={"bljs"}
+                  fullBoostVersionsExists={fullBoostVersionsExists}
+                />
               </TabsContent>
               <TabsContent value="npjb">
-                <Config title={"NPJB00512"} rpcs3Path={rpcs3Path} />
+                <Config
+                  title={"NPJB00512"}
+                  rpcs3Path={rpcs3Path}
+                  gameType={"npjb"}
+                  fullBoostVersionsExists={fullBoostVersionsExists}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -134,9 +147,8 @@ const selectDirectoryDialog = async () => {
   });
 
   // user selected multiple files or cancelled the selection
-  if (Array.isArray(selected) || selected === null)
-    return;
+  if (Array.isArray(selected) || selected === null) return;
 
   // else, user selected a single file
   return selected;
-}
+};
