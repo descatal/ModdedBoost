@@ -32,7 +32,6 @@ function Config({
 }) {
   const { t } = useTranslation();
   const [isModVersionSpinning, setModVersionSpinning] = useState(false);
-  const [disabledLunchButton, setDisabledLunchButton] = useState(false);
 
   const handleClick = () => {
     // Your click handling logic here
@@ -47,14 +46,8 @@ function Config({
     }, 1000);
   };
 
-  useEffect(() => {
-    if (fullBoostVersionsExists[gameType] == false) {
-      setDisabledLunchButton(true);
-    }
-  }, [fullBoostVersionsExists]);
-
   return (
-    <div>
+    <div className={fullBoostVersionsExists ? "" : "blur-sm pointer-events-none"}>
       <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
         <div className="space-y-5">
           <div className="flex items-center justify-between">
@@ -88,7 +81,6 @@ function Config({
           <Button
             className="w-full"
             onClick={() => launchGame(rpcs3Path, gameType)}
-            disabled={disabledLunchButton}
           >
             {t("Launch")} {title}
             <RocketIcon className="w-3 h-3 ml-2" />

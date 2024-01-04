@@ -6,5 +6,10 @@
   "Check for updates": "アップデートの確認",
   "Apply updates": "アップデートを適用",
   "RPCS3 Directory Changed": "RPCS3ディレクトリが変更されました",
-  "Processing new directory": "处理中"
+  "Processing new directory": "处理中",
+  "Games found!": "ゲーム発見!",
+  "No games found!": "ゲームが見つかりません!",
+  "Light": "ライトモード",
+  "Dark": "暗モード",
+  "System": "システム"
 }

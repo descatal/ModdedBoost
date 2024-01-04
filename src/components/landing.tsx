@@ -1,24 +1,21 @@
-﻿import { Button } from "@/components/ui/button.tsx";
-import { FileIcon } from "@radix-ui/react-icons";
-import { Card, CardContent, CardHeader } from "@/components/ui/card.tsx";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs.tsx";
+﻿import {Button} from "@/components/ui/button.tsx";
+import {FileIcon} from "@radix-ui/react-icons";
+import {Card, CardContent, CardHeader} from "@/components/ui/card.tsx";
+import {Tabs, TabsContent, TabsList, TabsTrigger,} from "@/components/ui/tabs.tsx";
 import Config from "@/components/config.tsx";
-import { ModeToggle } from "@/components/common/mode-toggle.tsx";
-import { LanguageToggle } from "@/components/common/language-toggle.tsx";
-import { Input } from "@/components/ui/input.tsx";
-import { Label } from "@/components/ui/label.tsx";
-import { useTranslation } from "react-i18next";
-import { open } from "@tauri-apps/api/dialog";
-import { SetStateAction, useEffect, useState } from "react";
-import { desktopDir } from "@tauri-apps/api/path";
-import { invoke } from "@tauri-apps/api/tauri";
-import { listen } from "@tauri-apps/api/event";
-import { toast } from "sonner";
+import {ModeToggle} from "@/components/common/mode-toggle.tsx";
+import {LanguageToggle} from "@/components/common/language-toggle.tsx";
+import {Input} from "@/components/ui/input.tsx";
+import {Label} from "@/components/ui/label.tsx";
+import {useTranslation} from "react-i18next";
+import {open} from '@tauri-apps/api/dialog';
+import {useEffect, useState} from "react";
+import {desktopDir} from "@tauri-apps/api/path";
+import {invoke} from "@tauri-apps/api/tauri";
+import {listen} from "@tauri-apps/api/event";
+import {toast} from "sonner";
+import {useStore} from "@/lib/store.ts";
+import {shallow} from "zustand/shallow";
 
 // same type as payload
 export type FullBoostVersions = {
@@ -28,13 +25,19 @@ export type FullBoostVersions = {
 
 export default function Landing() {
   const { t, i18n } = useTranslation();
-  const [rpcs3Path, setRpcs3Path] = useState("");
   const [fullBoostVersionsExists, setFullBoostVersionsExists] =
     useState<FullBoostVersions>({
       bljs: false,
       npjb: false,
-    });
-
+    });  
+  const { rpcs3Path, setRpcs3Path } = useStore(
+    (state) => ({
+      rpcs3Path: state.rpcs3Path,
+      setRpcs3Path: state.setRpcs3Path,
+    }),
+    shallow
+  );
+    
   useEffect(() => {
     //init rpcs3Path by localStorage
     setRpcs3Path(localStorage.getItem("rpcs3Path") || "");
@@ -45,37 +48,36 @@ export default function Landing() {
           toast.error(i18n.t("No games found!"));
         } else {
           toast.success(i18n.t("Games found!"));
-        }
+        setGameVersions(event.payload)
       });
-    };
-    subscribeDirectoryChangedEvent().catch(console.error);
-  }, []);
-
+    }
+    subscribeDirectoryChangedEvent()
+      .catch(console.error);
+  }, [gameVersions])
+  
   useEffect(() => {
     processDirectory();
   }, [rpcs3Path]);
-
-  const handleDirectoryChange = (event: {
-    target: { value: SetStateAction<string> };
-  }) => {
-    setRpcs3Path(event.target.value);
+  
+  const handleDirectoryChange = async (event: { target: { value: any; }; }) => {
+    await setRpcs3Path(event.target.value);
   };
 
   const changeDirectory = async () => {
-    const selectedDirectory = await selectDirectoryDialog();
-    if (!selectedDirectory) return;
+    const selectedDirectory = await selectDirectoryDialog(rpcs3Path);
+    if (!selectedDirectory)
+      return;
     await processDirectory();
-    setRpcs3Path(selectedDirectory);
+    await setRpcs3Path(selectedDirectory);
   };
 
   const processDirectory = async () => {
     if (!rpcs3Path) return;
 
     toast(i18n.t("RPCS3 Directory Changed"));
-    invoke("check_full_boost_game_version", { fullPath: rpcs3Path });
-    localStorage.setItem("rpcs3Path", rpcs3Path);
-  };
-
+    await invoke("check_full_boost_game_version", {fullPath: rpcs3Path});
+  }
+            
   return (
     <main key="1" className="min-h-screen py-12 px-4 md:py-24 md:px-6 lg:py-32">
       <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
@@ -139,11 +141,11 @@ export default function Landing() {
   );
 }
 
-const selectDirectoryDialog = async () => {
+const selectDirectoryDialog = async (initialPath: string) => {
   const selected = await open({
     directory: true,
     multiple: false,
-    defaultPath: await desktopDir(),
+    defaultPath: initialPath || await desktopDir(),
   });
 
   // user selected multiple files or cancelled the selection

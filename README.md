@@ -10,6 +10,10 @@ A rpcs3 game launching / configuration UI for the Modded Boost mod.
 - [Download](https://nightly.link/descatal/ModdedBoost/workflows/build/main/artifacts.zip) the latest build artifact
   and run the executable.
 
+## How to build
+
+`pnpm tauri dev`
+
 ## Credits
 
 The project is built using [tauri](https://tauri.app/) and [shadcn/ui](https://ui.shadcn.com/)
