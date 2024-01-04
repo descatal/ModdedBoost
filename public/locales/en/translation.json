@@ -6,5 +6,10 @@
   "Check for updates": "Check for updates",
   "Apply updates": "Apply updates",
   "RPCS3 Directory Changed": "RPCS3 Directory Changed",
-  "Processing new directory": "Processing new directory"
+  "Processing new directory": "Processing new directory",
+  "Games found!": "Games found!",
+  "No games found!": "No games found!",
+  "Light": "light",
+  "Dark": "dark",
+  "System": "system"
 }
