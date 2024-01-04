@@ -15,7 +15,7 @@ const launchGame = (rpcs3Path: String) => {
   invoke("check_full_boost_game_version", { fullPath: rpcs3Path });
 };
 
-function Config({ title, rpcs3Path }: { title: string, rpcs3Path: string }) {
+function Config({ enabled, title, rpcs3Path }: { enabled: boolean, title: string, rpcs3Path: string }) {
   const { t } = useTranslation();
   const [isModVersionSpinning, setModVersionSpinning] = useState(false);
   
@@ -33,7 +33,7 @@ function Config({ title, rpcs3Path }: { title: string, rpcs3Path: string }) {
   };
 
   return (
-    <div>
+    <div className={enabled ? "" : "blur-sm pointer-events-none"}>
       <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
         <div className="space-y-5">
           <div className="flex items-center justify-between">

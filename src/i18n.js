@@ -21,5 +21,7 @@ i18n
         }
     });
 
+//*** call without param to use language detector
+i18n.changeLanguage()
 
 export default i18n;

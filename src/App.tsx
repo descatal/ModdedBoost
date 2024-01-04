@@ -9,7 +9,7 @@ export default function App() {
     return (
         <>
             <React.Suspense fallback="loading">
-                <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+                <ThemeProvider>
                     <Landing />
                     <Toaster />
                 </ThemeProvider>

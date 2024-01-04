@@ -25,6 +25,7 @@ fn main() {
             notify,
             get_file_system_entries,
             check_full_boost_game_version])
+        .plugin(tauri_plugin_store::Builder::default().build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

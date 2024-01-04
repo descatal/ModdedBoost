@@ -34,7 +34,8 @@
         "removeDir": true,
         "removeFile": true,
         "renameFile": true,
-        "exists": true
+        "exists": true,
+        "scope": ["$APPCONFIG", "$APPCONFIG/*"]
       },
       "path": {
         "all": true

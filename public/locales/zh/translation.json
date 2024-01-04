@@ -6,5 +6,10 @@
   "Check for updates": "检测更新",
   "Apply updates": "安装更新",
   "RPCS3 Directory Changed": "RPCS3目录变更",
-  "Processing new directory": "処理中"
+  "Processing new directory": "処理中",
+  "Games found!": "发现游戏!",
+  "No games found!": "未发现任何游戏!",
+  "Light": "亮色",
+  "Dark": "深色",
+  "System": "系统"
 }
