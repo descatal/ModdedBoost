@@ -18,14 +18,18 @@ import {useStore} from "@/lib/store.ts";
 import {shallow} from "zustand/shallow";
 
 // same type as payload
-type FullBoostVersions = {
-  bljs: boolean,
-  npjb: boolean,
+export type FullBoostVersions = {
+  bljs: boolean;
+  npjb: boolean;
 };
 
 export default function Landing() {
   const { t, i18n } = useTranslation();
-  const [ gameVersions, setGameVersions] = useState<FullBoostVersions>({ bljs: false, npjb: false });
+  const [fullBoostVersionsExists, setFullBoostVersionsExists] =
+    useState<FullBoostVersions>({
+      bljs: false,
+      npjb: false,
+    });  
   const { rpcs3Path, setRpcs3Path } = useStore(
     (state) => ({
       rpcs3Path: state.rpcs3Path,
@@ -33,15 +37,17 @@ export default function Landing() {
     }),
     shallow
   );
-  
+    
   useEffect(() => {
+    //init rpcs3Path by localStorage
+    setRpcs3Path(localStorage.getItem("rpcs3Path") || "");
     const subscribeDirectoryChangedEvent = async () => {
-      await listen<FullBoostVersions>('directory-changed', (event) => {
-        if (!event.payload.bljs && !event.payload.npjb)
+      await listen<FullBoostVersions>("directory-changed", (event) => {
+        setFullBoostVersionsExists(event.payload);
+        if (!event.payload.bljs && !event.payload.npjb) {
           toast.error(i18n.t("No games found!"));
-        else
+        } else {
           toast.success(i18n.t("Games found!"));
-        
         setGameVersions(event.payload)
       });
     }
@@ -50,10 +56,7 @@ export default function Landing() {
   }, [gameVersions])
   
   useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-      await processDirectory();
-    }, 1000);
-    return () => clearTimeout(delayDebounceFn);
+    processDirectory();
   }, [rpcs3Path]);
   
   const handleDirectoryChange = async (event: { target: { value: any; }; }) => {
@@ -69,13 +72,12 @@ export default function Landing() {
   };
 
   const processDirectory = async () => {
-    if (!rpcs3Path)
-      return;
-      
+    if (!rpcs3Path) return;
+
     toast(i18n.t("RPCS3 Directory Changed"));
     await invoke("check_full_boost_game_version", {fullPath: rpcs3Path});
   }
-  
+            
   return (
     <main key="1" className="min-h-screen py-12 px-4 md:py-24 md:px-6 lg:py-32">
       <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
@@ -116,10 +118,20 @@ export default function Landing() {
                 <TabsTrigger value="npjb">NPJB00512</TabsTrigger>
               </TabsList>
               <TabsContent value="bljs">
-                <Config enabled={gameVersions.bljs} title={"BLJS10250"} rpcs3Path={rpcs3Path} />
+                <Config
+                  title={"BLJS10250"}
+                  rpcs3Path={rpcs3Path}
+                  gameType={"bljs"}
+                  fullBoostVersionsExists={fullBoostVersionsExists}
+                />
               </TabsContent>
               <TabsContent value="npjb">
-                <Config enabled={gameVersions.npjb} title={"NPJB00512"} rpcs3Path={rpcs3Path} />
+                <Config
+                  title={"NPJB00512"}
+                  rpcs3Path={rpcs3Path}
+                  gameType={"npjb"}
+                  fullBoostVersionsExists={fullBoostVersionsExists}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -137,9 +149,8 @@ const selectDirectoryDialog = async (initialPath: string) => {
   });
 
   // user selected multiple files or cancelled the selection
-  if (Array.isArray(selected) || selected === null)
-    return;
+  if (Array.isArray(selected) || selected === null) return;
 
   // else, user selected a single file
   return selected;
-}
+};

@@ -8,17 +8,31 @@ import {
 import { Label } from "@/components/ui/label.tsx";
 import { useTranslation } from "react-i18next";
 import HoverIconButton from "@/components/common/hover-icon-button.tsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import { FullBoostVersions } from "./landing";
 
-const launchGame = (rpcs3Path: String) => {
-  invoke("check_full_boost_game_version", { fullPath: rpcs3Path });
+const launchGame = (rpcs3Path: String, gameType: "bljs" | "npjb") => {
+  invoke("auto_find_path_and_run_game", {
+    fullPath: rpcs3Path,
+    gameType: gameType,
+  });
 };
 
-function Config({ enabled, title, rpcs3Path }: { enabled: boolean, title: string, rpcs3Path: string }) {
+function Config({
+  title,
+  rpcs3Path,
+  gameType,
+  fullBoostVersionsExists,
+}: {
+  title: string;
+  rpcs3Path: string;
+  gameType: "bljs" | "npjb";
+  fullBoostVersionsExists: FullBoostVersions;
+}) {
   const { t } = useTranslation();
   const [isModVersionSpinning, setModVersionSpinning] = useState(false);
-  
+
   const handleClick = () => {
     // Your click handling logic here
     console.log("Button clicked!");
@@ -33,7 +47,7 @@ function Config({ enabled, title, rpcs3Path }: { enabled: boolean, title: string
   };
 
   return (
-    <div className={enabled ? "" : "blur-sm pointer-events-none"}>
+    <div className={fullBoostVersionsExists ? "" : "blur-sm pointer-events-none"}>
       <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
         <div className="space-y-5">
           <div className="flex items-center justify-between">
@@ -64,7 +78,10 @@ function Config({ enabled, title, rpcs3Path }: { enabled: boolean, title: string
               />
             </div>
           </div>
-          <Button className="w-full" onClick={() => launchGame(rpcs3Path)}>
+          <Button
+            className="w-full"
+            onClick={() => launchGame(rpcs3Path, gameType)}
+          >
             {t("Launch")} {title}
             <RocketIcon className="w-3 h-3 ml-2" />
           </Button>
