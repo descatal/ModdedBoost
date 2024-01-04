@@ -25,7 +25,7 @@ export type FullBoostVersions = {
 
 export default function Landing() {
   const { t, i18n } = useTranslation();
-  const [fullBoostVersionsExists, setFullBoostVersionsExists] =
+  const [ fullBoostVersions, setFullBoostVersions] =
     useState<FullBoostVersions>({
       bljs: false,
       npjb: false,
@@ -39,21 +39,20 @@ export default function Landing() {
   );
     
   useEffect(() => {
-    //init rpcs3Path by localStorage
-    setRpcs3Path(localStorage.getItem("rpcs3Path") || "");
-    const subscribeDirectoryChangedEvent = async () => {
+    const subscribeDirectoryChangedEvent = async ()=> {
       await listen<FullBoostVersions>("directory-changed", (event) => {
-        setFullBoostVersionsExists(event.payload);
-        if (!event.payload.bljs && !event.payload.npjb) {
-          toast.error(i18n.t("No games found!"));
-        } else {
-          toast.success(i18n.t("Games found!"));
-        setGameVersions(event.payload)
-      });
+          setFullBoostVersions(event.payload);
+          if (!event.payload.bljs && !event.payload.npjb) {
+            toast.error(i18n.t("No games found!"));
+          } else {
+            toast.success(i18n.t("Games found!"));
+          }
+        }
+      )
     }
     subscribeDirectoryChangedEvent()
       .catch(console.error);
-  }, [gameVersions])
+  }, []);
   
   useEffect(() => {
     processDirectory();
@@ -119,18 +118,18 @@ export default function Landing() {
               </TabsList>
               <TabsContent value="bljs">
                 <Config
+                  enabled={fullBoostVersions.bljs}
                   title={"BLJS10250"}
                   rpcs3Path={rpcs3Path}
                   gameType={"bljs"}
-                  fullBoostVersionsExists={fullBoostVersionsExists}
                 />
               </TabsContent>
               <TabsContent value="npjb">
                 <Config
+                  enabled={fullBoostVersions.npjb}
                   title={"NPJB00512"}
                   rpcs3Path={rpcs3Path}
                   gameType={"npjb"}
-                  fullBoostVersionsExists={fullBoostVersionsExists}
                 />
               </TabsContent>
             </Tabs>

@@ -1,16 +1,11 @@
-﻿import { Card } from "@/components/ui/card.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import {
-  DoubleArrowUpIcon,
-  RocketIcon,
-  UpdateIcon,
-} from "@radix-ui/react-icons";
-import { Label } from "@/components/ui/label.tsx";
-import { useTranslation } from "react-i18next";
+﻿import {Card} from "@/components/ui/card.tsx";
+import {Button} from "@/components/ui/button.tsx";
+import {DoubleArrowUpIcon, RocketIcon, UpdateIcon,} from "@radix-ui/react-icons";
+import {Label} from "@/components/ui/label.tsx";
+import {useTranslation} from "react-i18next";
 import HoverIconButton from "@/components/common/hover-icon-button.tsx";
-import { useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/tauri";
-import { FullBoostVersions } from "./landing";
+import {useState} from "react";
+import {invoke} from "@tauri-apps/api/tauri";
 
 const launchGame = (rpcs3Path: String, gameType: "bljs" | "npjb") => {
   invoke("auto_find_path_and_run_game", {
@@ -20,15 +15,15 @@ const launchGame = (rpcs3Path: String, gameType: "bljs" | "npjb") => {
 };
 
 function Config({
+  enabled,
   title,
   rpcs3Path,
   gameType,
-  fullBoostVersionsExists,
 }: {
+  enabled: boolean
   title: string;
   rpcs3Path: string;
   gameType: "bljs" | "npjb";
-  fullBoostVersionsExists: FullBoostVersions;
 }) {
   const { t } = useTranslation();
   const [isModVersionSpinning, setModVersionSpinning] = useState(false);
@@ -47,7 +42,7 @@ function Config({
   };
 
   return (
-    <div className={fullBoostVersionsExists ? "" : "blur-sm pointer-events-none"}>
+    <div className={enabled ? "" : "blur-sm pointer-events-none"}>
       <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
         <div className="space-y-5">
           <div className="flex items-center justify-between">
