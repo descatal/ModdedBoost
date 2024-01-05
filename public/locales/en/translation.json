@@ -1,14 +1,14 @@
 ﻿{
-  "RPCS3 Directory": "RPCS3 Directory",
+  "Rpcs3 executable path": "Rpcs3 executable path",
   "Game Version": "Game Version",
   "Mod Version": "Mod Version",
   "Launch": "Launch",
   "Check for updates": "Check for updates",
   "Apply updates": "Apply updates",
-  "RPCS3 Directory Changed": "RPCS3 Directory Changed",
-  "Processing new directory": "Processing new directory",
+  "Rpcs3 path changed, processing directory...": "Rpcs3 path changed, processing directory...",
   "Games found!": "Games found!",
   "No games found!": "No games found!",
+  "File not found!": "File not found!",
   "Light": "light",
   "Dark": "dark",
   "System": "system"

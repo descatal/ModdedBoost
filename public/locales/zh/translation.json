@@ -1,14 +1,14 @@
 ﻿{
-  "RPCS3 Directory": "RPCS3目录",
+  "Rpcs3 executable path": "Rpcs3 应用路径",
   "Game Version": "游戏版本",
   "Mod Version": "Mod版本",
   "Launch": "运行",
   "Check for updates": "检测更新",
   "Apply updates": "安装更新",
-  "RPCS3 Directory Changed": "RPCS3目录变更",
-  "Processing new directory": "処理中",
+  "Rpcs3 path changed, processing directory...": "Rpcs3 应用路径变更，重新读取游戏信息。。。",
   "Games found!": "发现游戏!",
   "No games found!": "未发现任何游戏!",
+  "File not found!": "文件路径错误！",
   "Light": "亮色",
   "Dark": "深色",
   "System": "系统"

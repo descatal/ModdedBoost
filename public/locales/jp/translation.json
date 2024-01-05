@@ -1,14 +1,14 @@
 ﻿{
-  "RPCS3 Directory": "RPCS3ディレクトリ",
+  "Rpcs3 executable path": "Rpcs3 アプリパス",
   "Game Version": "ゲームバージョン",
   "Mod Version": "MODバージョン",
   "Launch": "起動",
   "Check for updates": "アップデートの確認",
   "Apply updates": "アップデートを適用",
-  "RPCS3 Directory Changed": "RPCS3ディレクトリが変更されました",
-  "Processing new directory": "处理中",
+  "Rpcs3 path changed, processing directory...": "Rpcs3 アプリパスが変更されました、 ゲーム情報再読します。。。",
   "Games found!": "ゲーム発見!",
   "No games found!": "ゲームが見つかりません!",
+  "File not found!": "ファイルが見つかりません!",
   "Light": "ライトモード",
   "Dark": "暗モード",
   "System": "システム"
