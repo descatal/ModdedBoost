@@ -2,16 +2,16 @@ use crate::file_handler::get_file_system_entries;
 use std::process::Command;
 
 #[tauri::command]
-pub fn auto_find_path_and_run_game(fullPath: &str, gameType: &str) {
+pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
     //find the game path first
     //if gameType is npjb then npjb00512, else bljs10250
-    let game_type_path: &str = match gameType {
+    let game_type_path: &str = match game_type {
         "npjb" => r"npjb00512\usrdir\eboot.bin",
         "bljs" => r"BLJS10250\usrdir\eboot.bin",
         _ => "",
     };
     // find by game_type_path
-    let find_eboot_path = get_file_system_entries(fullPath, Some(game_type_path));
+    let find_eboot_path = get_file_system_entries(full_path, Some(game_type_path));
     // change to &str
     let eboot_path: &str = match find_eboot_path.first() {
         Some(path) => path,
@@ -19,7 +19,7 @@ pub fn auto_find_path_and_run_game(fullPath: &str, gameType: &str) {
     };
 
     // setting rpcs3.exe path => fullPath + rpcs3.exe
-    let rpcs3_exe_path_string = format!("{}\\rpcs3.exe", fullPath);
+    let rpcs3_exe_path_string = format!("{}\\rpcs3.exe", full_path);
     let rpcs3_exe_path: &str = &rpcs3_exe_path_string;
 
     // if eboot_path is empty then return

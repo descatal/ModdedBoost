@@ -21,6 +21,7 @@ import { listen } from "@tauri-apps/api/event";
 import { toast } from "sonner";
 import { useStore } from "@/lib/store.ts";
 import { shallow } from "zustand/shallow";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 // same type as payload
 export type FullBoostVersions = {
@@ -30,10 +31,11 @@ export type FullBoostVersions = {
 
 export default function Landing() {
   const { t, i18n } = useTranslation();
-  const [gameVersions, setGameVersions] = useState<FullBoostVersions>({
-    bljs: false,
-    npjb: false,
-  });
+  const [ fullBoostVersions, setFullBoostVersions] =
+    useState<FullBoostVersions>({
+      bljs: false,
+      npjb: false,
+    });  
   const { rpcs3Path, setRpcs3Path } = useStore(
     (state) => ({
       rpcs3Path: state.rpcs3Path,
@@ -43,44 +45,49 @@ export default function Landing() {
   );
 
   useEffect(() => {
-    //init rpcs3Path by localStorage
-    setRpcs3Path(localStorage.getItem("rpcs3Path") || "");
-    const subscribeDirectoryChangedEvent = async () => {
-      await listen<FullBoostVersions>("directory-changed", (event) => {
-        if (!event.payload.bljs && !event.payload.npjb) {
-          toast.error(i18n.t("No games found!"));
-        } else {
-          toast.success(i18n.t("Games found!"));
-
-          setGameVersions(event.payload);
+    const subscribePathChangedEvent = async ()=> {
+      await listen<FullBoostVersions>("rpcs3-games", (event) => {
+          setFullBoostVersions(event.payload);
+          if (!event.payload.bljs && !event.payload.npjb) {
+            toast.error(i18n.t("No games found!"));
+          } else {
+            toast.success(i18n.t("Games found!"));
+          }
         }
-      });
-    };
-    subscribeDirectoryChangedEvent().catch(console.error);
-  }, [gameVersions]);
+      )
+    }
+    subscribePathChangedEvent()
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
-    processDirectory();
+    const delayDebounceFn = setTimeout(async () => {
+      await processDirectory();
+    }, 1000);
+    return () => clearTimeout(delayDebounceFn);
   }, [rpcs3Path]);
-
-  const handleDirectoryChange = async (event: { target: { value: any } }) => {
+  
+  const handlePathChange = async (event: { target: { value: any; }; }) => {
     await setRpcs3Path(event.target.value);
   };
 
-  const changeDirectory = async () => {
-    const selectedDirectory = await selectDirectoryDialog(rpcs3Path);
-    if (!selectedDirectory) return;
+  const changeRpcs3Path = async () => {
+    const selectedPath = await selectSingleFileSystemDialog(rpcs3Path, false);
+    if (!selectedPath)
+      return;
     await processDirectory();
-    await setRpcs3Path(selectedDirectory);
+    await setRpcs3Path(selectedPath);
   };
 
   const processDirectory = async () => {
     if (!rpcs3Path) return;
 
-    toast(i18n.t("RPCS3 Directory Changed"));
-    await invoke("check_full_boost_game_version", { fullPath: rpcs3Path });
-  };
-
+    toast(i18n.t("Rpcs3 path changed, processing directory..."));
+    invoke("check_full_boost_game_version", {fullPath: rpcs3Path}).catch(() => {
+      toast.error(i18n.t("File not found!"));
+    })
+  }
+            
   return (
     <main key="1" className="min-h-screen py-12 px-4 md:py-24 md:px-6 lg:py-32">
       <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
@@ -97,8 +104,14 @@ export default function Landing() {
           <div className="space-y-4">
             <div>
               <Label className="block text-sm font-medium" htmlFor="path">
-                {t("RPCS3 Directory")}
+                <Tooltip>
+                  <TooltipTrigger>{t("Rpcs3 executable path")}</TooltipTrigger>
+                  <TooltipContent>
+                    <p>.exe | .AppImage | .app</p>
+                  </TooltipContent>
+                </Tooltip>
               </Label>
+ 
               <div className="flex justify-between items-center space-x-2 mt-2">
                 <Input
                   className="block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -107,10 +120,10 @@ export default function Landing() {
                   placeholder="/path/to/rpcs3"
                   type="text"
                   multiple={false}
-                  onChange={handleDirectoryChange}
+                  onChange={handlePathChange}
                   value={rpcs3Path}
                 />
-                <Button variant="outline" onClick={changeDirectory}>
+                <Button variant="outline" onClick={changeRpcs3Path}>
                   <FileIcon className="w-4 h-4" />
                 </Button>
               </div>
@@ -122,18 +135,18 @@ export default function Landing() {
               </TabsList>
               <TabsContent value="bljs">
                 <Config
-                  enabled={gameVersions.bljs}
+                  enabled={fullBoostVersions.bljs}
                   title={"BLJS10250"}
                   rpcs3Path={rpcs3Path}
-                  gameVersion="bljs"
+                  gameVersion={"bljs"}
                 />
               </TabsContent>
               <TabsContent value="npjb">
                 <Config
-                  enabled={gameVersions.npjb}
+                  enabled={fullBoostVersions.npjb}
                   title={"NPJB00512"}
                   rpcs3Path={rpcs3Path}
-                  gameVersion="npjb"
+                  gameVersion={"npjb"}
                 />
               </TabsContent>
             </Tabs>
@@ -144,13 +157,13 @@ export default function Landing() {
   );
 }
 
-const selectDirectoryDialog = async (initialPath: string) => {
+const selectSingleFileSystemDialog = async (defaultPath: string, directory: boolean) => {
   const selected = await open({
-    directory: true,
+    directory: directory || false,
     multiple: false,
-    defaultPath: initialPath || (await desktopDir()),
+    defaultPath: defaultPath || await desktopDir(),
   });
-
+  
   // user selected multiple files or cancelled the selection
   if (Array.isArray(selected) || selected === null) return;
 

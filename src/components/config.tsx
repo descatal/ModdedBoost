@@ -8,9 +8,8 @@ import {
 import { Label } from "@/components/ui/label.tsx";
 import { useTranslation } from "react-i18next";
 import HoverIconButton from "@/components/common/hover-icon-button.tsx";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { FullBoostVersions } from "./landing";
 
 const launchGame = (rpcs3Path: String, gameType: "bljs" | "npjb") => {
   invoke("auto_find_path_and_run_game", {
