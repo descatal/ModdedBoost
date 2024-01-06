@@ -11,16 +11,18 @@ pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
         _ => "",
     };
     // find by game_type_path
-    let find_eboot_path = get_file_system_entries(full_path, Some(game_type_path));
+    // 1. we don't need the rpcs3.exe in path, so we need remove it
+    let find_eboot_path_string: &String = &full_path.replace("rpcs3.exe", "");
+
+    // eg. C:\rpcs3\rpcs3.exe => C:\rpcs3
+    let find_eboot_path = get_file_system_entries(find_eboot_path_string, Some(game_type_path));
     // change to &str
     let eboot_path: &str = match find_eboot_path.first() {
         Some(path) => path,
         None => "",
     };
 
-    // setting rpcs3.exe path => fullPath + rpcs3.exe
-    let rpcs3_exe_path_string = format!("{}\\rpcs3.exe", full_path);
-    let rpcs3_exe_path: &str = &rpcs3_exe_path_string;
+    println!("{}", full_path);
 
     // if eboot_path is empty then return
     if eboot_path.is_empty() {
@@ -28,10 +30,10 @@ pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
     }
     //create new command to execute the game
     let _command = Command::new("cmd")
-        .args(["/C", rpcs3_exe_path, eboot_path])
+        .args(["/C", full_path, eboot_path])
         .spawn()
         .expect("failed to execute process");
-    
+
     // exit the app
     std::process::exit(0);
 }

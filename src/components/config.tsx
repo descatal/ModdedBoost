@@ -1,11 +1,15 @@
-﻿import {Card} from "@/components/ui/card.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {DoubleArrowUpIcon, RocketIcon, UpdateIcon,} from "@radix-ui/react-icons";
-import {Label} from "@/components/ui/label.tsx";
-import {useTranslation} from "react-i18next";
+﻿import { Card } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import {
+  DoubleArrowUpIcon,
+  RocketIcon,
+  UpdateIcon,
+} from "@radix-ui/react-icons";
+import { Label } from "@/components/ui/label.tsx";
+import { useTranslation } from "react-i18next";
 import HoverIconButton from "@/components/common/hover-icon-button.tsx";
-import {useState} from "react";
-import {invoke} from "@tauri-apps/api/tauri";
+import { useState } from "react";
+import { invoke } from "@tauri-apps/api/tauri";
 
 const launchGame = (rpcs3Path: String, gameType: "bljs" | "npjb") => {
   invoke("auto_find_path_and_run_game", {
@@ -18,12 +22,12 @@ function Config({
   enabled,
   title,
   rpcs3Path,
-  gameType,
+  gameVersion,
 }: {
-  enabled: boolean
+  enabled: boolean;
   title: string;
   rpcs3Path: string;
-  gameType: "bljs" | "npjb";
+  gameVersion: "bljs" | "npjb";
 }) {
   const { t } = useTranslation();
   const [isModVersionSpinning, setModVersionSpinning] = useState(false);
@@ -42,7 +46,7 @@ function Config({
   };
 
   return (
-    <div className={enabled ? "" : "blur-sm pointer-events-none"}>
+    <div className={enabled ? "" : "pointer-events-none"}>
       <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
         <div className="space-y-5">
           <div className="flex items-center justify-between">
@@ -75,7 +79,8 @@ function Config({
           </div>
           <Button
             className="w-full"
-            onClick={() => launchGame(rpcs3Path, gameType)}
+            onClick={() => launchGame(rpcs3Path, gameVersion)}
+            disabled={!enabled}
           >
             {t("Launch")} {title}
             <RocketIcon className="w-3 h-3 ml-2" />

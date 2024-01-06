@@ -1,22 +1,27 @@
-﻿import {Button} from "@/components/ui/button.tsx";
-import {FileIcon} from "@radix-ui/react-icons";
-import {Card, CardContent, CardHeader} from "@/components/ui/card.tsx";
-import {Tabs, TabsContent, TabsList, TabsTrigger,} from "@/components/ui/tabs.tsx";
+﻿import { Button } from "@/components/ui/button.tsx";
+import { FileIcon } from "@radix-ui/react-icons";
+import { Card, CardContent, CardHeader } from "@/components/ui/card.tsx";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs.tsx";
 import Config from "@/components/config.tsx";
-import {ModeToggle} from "@/components/common/mode-toggle.tsx";
-import {LanguageToggle} from "@/components/common/language-toggle.tsx";
-import {Input} from "@/components/ui/input.tsx";
-import {Label} from "@/components/ui/label.tsx";
-import {useTranslation} from "react-i18next";
-import {open} from '@tauri-apps/api/dialog';
-import {useEffect, useState} from "react";
-import {desktopDir} from "@tauri-apps/api/path";
-import {invoke} from "@tauri-apps/api/tauri";
-import {listen} from "@tauri-apps/api/event";
-import {toast} from "sonner";
-import {useStore} from "@/lib/store.ts";
-import {shallow} from "zustand/shallow";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip.tsx";
+import { ModeToggle } from "@/components/common/mode-toggle.tsx";
+import { LanguageToggle } from "@/components/common/language-toggle.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Label } from "@/components/ui/label.tsx";
+import { useTranslation } from "react-i18next";
+import { open } from "@tauri-apps/api/dialog";
+import { useEffect, useState } from "react";
+import { desktopDir } from "@tauri-apps/api/path";
+import { invoke } from "@tauri-apps/api/tauri";
+import { listen } from "@tauri-apps/api/event";
+import { toast } from "sonner";
+import { useStore } from "@/lib/store.ts";
+import { shallow } from "zustand/shallow";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 // same type as payload
 export type FullBoostVersions = {
@@ -38,7 +43,7 @@ export default function Landing() {
     }),
     shallow
   );
-    
+
   useEffect(() => {
     const subscribePathChangedEvent = async ()=> {
       await listen<FullBoostVersions>("rpcs3-games", (event) => {
@@ -133,7 +138,7 @@ export default function Landing() {
                   enabled={fullBoostVersions.bljs}
                   title={"BLJS10250"}
                   rpcs3Path={rpcs3Path}
-                  gameType={"bljs"}
+                  gameVersion={"bljs"}
                 />
               </TabsContent>
               <TabsContent value="npjb">
@@ -141,7 +146,7 @@ export default function Landing() {
                   enabled={fullBoostVersions.npjb}
                   title={"NPJB00512"}
                   rpcs3Path={rpcs3Path}
-                  gameType={"npjb"}
+                  gameVersion={"npjb"}
                 />
               </TabsContent>
             </Tabs>
