@@ -47,6 +47,8 @@ function Config({
     }, 1000);
   };
   
+  console.log(enabled)
+  
   return (
     <div className={enabled ? "" : "pointer-events-none"}>
       <Card className={`${enabled ? 'border-gray-300' : 'border-red-500'} mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg`}>

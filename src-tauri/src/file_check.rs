@@ -1,10 +1,10 @@
 use std::collections::HashMap;
-use std::ffi::OsStr;
 use std::fs::File;
 use std::path::Path;
 use relative_path::RelativePath;
 
-use tauri::Manager;
+use tauri::{Manager};
+use tauri::api::path::home_dir;
 
 use crate::file_handler::{get_file_system_entries, get_rpcs3_os, OS};
 
@@ -34,14 +34,21 @@ pub async fn check_full_boost_game_version(
                     None => return Err(()),
                 }
             }
-            OS::Linux => String::from("~/.config/rpcs3/"),
-            OS::Macos => String::from("~/Library/Application Support/rpcs3/"),
+            OS::Linux => { 
+                let home_dir = home_dir().unwrap().as_path().display().to_string();
+                let config_rpcs3_relative_path = RelativePath::new(".config/rpcs3");
+                let path_buf = config_rpcs3_relative_path.to_path(&home_dir);
+                let path_str = path_buf.to_str().unwrap();
+                let path_string = path_str.to_string();
+                path_string
+            },
+            OS::Macos => String::from("~/Library/Application Support/rpcs3"),
         },
         Err(_) => return Err(()),
     };
 
-    let relative_path = RelativePath::new("/dev_hdd0/");
-    let game_directory_string = relative_path.to_path(&rpcs3_directory).display().to_string();
+    let dev_hdd0_relative_path = RelativePath::new("dev_hdd0");
+    let game_directory_string = dev_hdd0_relative_path.to_path(&rpcs3_directory).display().to_string();
     let game_directory = &game_directory_string;
     
     println!("{}", game_directory);
@@ -50,7 +57,7 @@ pub async fn check_full_boost_game_version(
     // rpcs3 checks all of the param.sfo directories under "dev_hdd0/game", 
     // NPJB00512 is the default folder that the game is installed in
     // TODO: Use https://github.com/hippie68/sfo to read the param.sfo's game metadata instead of checking directory only
-    let npjb_sfo_paths = get_file_system_entries(game_directory, Some(r"npjb00512\param.sfo"));
+    let npjb_sfo_paths = get_file_system_entries(game_directory, Some(r"npjb00512/param.sfo"));
     if let Some(_first_item) = npjb_sfo_paths.first() {
         game_payload.npjb = true;
     }
