@@ -64,9 +64,9 @@ export default function Landing() {
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       await processDirectory();
-    }, 1000);
+    }, 1200);
     return () => clearTimeout(delayDebounceFn);
-  }, [rpcs3Path, 1000]);
+  }, [rpcs3Path, 1200]);
   
   const handlePathChange = async (event: { target: { value: any; }; }) => {
     await setRpcs3Path(event.target.value);
