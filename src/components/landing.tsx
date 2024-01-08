@@ -43,6 +43,7 @@ export default function Landing() {
     }),
     shallow
   );
+  const [debouncedRpcs3Path, setDebouncedRpcs3Path] = useState("");
 
   useEffect(() => {
     const subscribePathChangedEvent = async ()=> {
@@ -58,14 +59,14 @@ export default function Landing() {
     }
     subscribePathChangedEvent()
       .catch(console.error);
-  }, []);
+  }, [fullBoostVersions]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       await processDirectory();
     }, 1000);
     return () => clearTimeout(delayDebounceFn);
-  }, [rpcs3Path]);
+  }, [rpcs3Path, 1000]);
   
   const handlePathChange = async (event: { target: { value: any; }; }) => {
     await setRpcs3Path(event.target.value);
@@ -82,8 +83,10 @@ export default function Landing() {
   const processDirectory = async () => {
     if (!rpcs3Path) return;
 
+    setDebouncedRpcs3Path(rpcs3Path);
     toast(i18n.t("Rpcs3 path changed, processing directory..."));
     invoke("check_full_boost_game_version", {fullPath: rpcs3Path}).catch(() => {
+      setFullBoostVersions({npjb: false, bljs: false})
       toast.error(i18n.t("File not found!"));
     })
   }
@@ -114,7 +117,7 @@ export default function Landing() {
  
               <div className="flex justify-between items-center space-x-2 mt-2">
                 <Input
-                  className="block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className=" block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   id="rpcs3-path"
                   name="rpcs3-path"
                   placeholder="/path/to/rpcs3"
@@ -137,16 +140,16 @@ export default function Landing() {
                 <Config
                   enabled={fullBoostVersions.bljs}
                   title={"BLJS10250"}
-                  rpcs3Path={rpcs3Path}
-                  gameVersion={"bljs"}
+                  rpcs3Path={debouncedRpcs3Path}
+                  gameVersion={"BLJS10250"}
                 />
               </TabsContent>
               <TabsContent value="npjb">
                 <Config
                   enabled={fullBoostVersions.npjb}
                   title={"NPJB00512"}
-                  rpcs3Path={rpcs3Path}
-                  gameVersion={"npjb"}
+                  rpcs3Path={debouncedRpcs3Path}
+                  gameVersion={"NPJB00512"}
                 />
               </TabsContent>
             </Tabs>

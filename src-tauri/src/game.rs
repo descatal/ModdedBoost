@@ -1,5 +1,5 @@
-use crate::file_handler::get_file_system_entries;
-use std::process::Command;
+use async_process::Command;
+use crate::file_handler::{get_file_system_entries, get_rpcs3_os, OS};
 
 #[tauri::command]
 pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
@@ -36,4 +36,37 @@ pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
 
     // exit the app
     std::process::exit(0);
+}
+
+#[tauri::command]
+pub async fn launch_game(full_path: &str, game_type: &str) -> Result<(), ()> {
+    match get_rpcs3_os(full_path) {
+        Ok(OS::Windows) => {
+            let _game_output = Command::new(full_path)
+                .arg("--no-gui")
+                .arg(format!("%RPCS3_GAMEID%:{}", game_type))
+                .output()
+                .await
+                .unwrap_or_else(|_| panic!("Failed to launch game!"));
+        },
+        Ok(OS::Linux) => {
+            let _chmod_output = Command::new("chmod")
+                .arg("+x")
+                .arg(full_path)
+                .output()
+                .await
+                .unwrap_or_else(|_| panic!("Failed to turn AppImage into executable!"));
+
+            let _game_output = Command::new(full_path)
+                .arg("--no-gui")
+                .arg(format!("%RPCS3_GAMEID%:{}", game_type))
+                .output()
+                .await
+                .unwrap_or_else(|_| panic!("Failed to launch game!"));
+        }
+        Ok(OS::Macos) => println!("macOS is not supported"),
+        Err(()) => println!("Unsupported OS type"),
+    }
+    
+    Ok(())
 }

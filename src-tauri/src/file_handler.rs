@@ -1,4 +1,5 @@
-
+use std::ffi::OsStr;
+use std::path::Path;
 use walkdir::WalkDir;
 
 #[tauri::command]
@@ -17,4 +18,35 @@ pub fn get_file_system_entries(full_path: &str, file_path_filter: Option<&str>) 
     }
 
     matched_files
+}
+
+#[derive(Clone, serde::Serialize)]
+pub enum OS {
+    Windows,
+    Linux,
+    Macos
+}
+
+pub fn get_rpcs3_os(full_path: &str) -> Result<OS, ()>
+{
+    let path: &Path = Path::new(full_path);
+    if !path.exists() {
+        return Err(());
+    }
+
+    let file_ext: Option<&str> = path.extension().and_then(OsStr::to_str);
+    let rpcs3_os = match file_ext {
+        Some(extension) => {
+            let extension = extension.to_lowercase();
+            match extension.as_str() {
+                "exe" => OS::Windows,
+                "appimage" => OS::Linux,
+                "app" => OS::Macos,
+                _ => return Err(())
+            }
+        }
+        None => return Err(()),
+    };
+
+    Ok(rpcs3_os)
 }

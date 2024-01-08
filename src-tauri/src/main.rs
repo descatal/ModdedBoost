@@ -8,7 +8,7 @@ use tokio::time::sleep;
 use crate::notify::notify;
 use crate::file_handler::get_file_system_entries;
 use crate::file_check::check_full_boost_game_version;
-use crate::game::auto_find_path_and_run_game;
+use crate::game::{auto_find_path_and_run_game, launch_game};
 
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #[cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -27,7 +27,8 @@ fn main() {
             notify,
             get_file_system_entries,
             check_full_boost_game_version,
-            auto_find_path_and_run_game])
+            auto_find_path_and_run_game,
+            launch_game])
         .plugin(tauri_plugin_store::Builder::default().build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -23,6 +23,7 @@ tokio = { version = "1.35.1", features = [ "full" ] }
 serde_yaml = "0.9.30"
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 relative-path = "1.9.2"
+async-process = "2.0.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

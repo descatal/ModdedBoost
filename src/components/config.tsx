@@ -11,11 +11,13 @@ import HoverIconButton from "@/components/common/hover-icon-button.tsx";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 
-const launchGame = (rpcs3Path: String, gameType: "bljs" | "npjb") => {
-  invoke("auto_find_path_and_run_game", {
+const launchGame = (rpcs3Path: String, gameType: "BLJS10250" | "NPJB00512") => {
+  console.log("test");
+  invoke("launch_game", {
     fullPath: rpcs3Path,
     gameType: gameType,
   });
+  console.log("test2");
 };
 
 function Config({
@@ -27,11 +29,11 @@ function Config({
   enabled: boolean;
   title: string;
   rpcs3Path: string;
-  gameVersion: "bljs" | "npjb";
+  gameVersion: "BLJS10250" | "NPJB00512";
 }) {
   const { t } = useTranslation();
   const [isModVersionSpinning, setModVersionSpinning] = useState(false);
-
+  
   const handleClick = () => {
     // Your click handling logic here
     console.log("Button clicked!");
@@ -44,10 +46,10 @@ function Config({
       setModVersionSpinning(false);
     }, 1000);
   };
-
+  
   return (
     <div className={enabled ? "" : "pointer-events-none"}>
-      <Card className="mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg">
+      <Card className={`${enabled ? 'border-gray-300' : 'border-red-500'} mx-auto w-full max-w-[500px] p-6 rounded-lg shadow-lg`}>
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium">{t("Game Version")}</Label>

@@ -6,7 +6,7 @@ use relative_path::RelativePath;
 
 use tauri::Manager;
 
-use crate::file_handler::get_file_system_entries;
+use crate::file_handler::{get_file_system_entries, get_rpcs3_os, OS};
 
 #[derive(Clone, serde::Serialize)]
 struct FullBoostVersions {
@@ -23,30 +23,21 @@ pub async fn check_full_boost_game_version(
         bljs: false,
         npjb: false,
     };
-    
+
     // Don't need to continue parsing if the specified executable is invalid
     let path: &Path = Path::new(full_path);
-    if !path.exists() {
-        return Err(());
-    }
-    
-    let file_ext: Option<&str> = path.extension().and_then(OsStr::to_str);
-    let mut rpcs3_directory = match file_ext {
-        Some(extension) => {
-            let extension = extension.to_lowercase();
-            match extension.as_str() {
-                "exe" => {
-                    match path.parent() {
-                        Some(parent_path) => parent_path.to_str().unwrap().to_string(),
-                        None => String::from(""),
-                    }
+    let rpcs3_directory = match get_rpcs3_os(full_path) {
+        Ok(os) => match os {
+            OS::Windows => {
+                match path.parent() {
+                    Some(parent_path) => parent_path.to_str().unwrap().to_string(),
+                    None => return Err(()),
                 }
-                "appimage" => String::from("~/.config/rpcs3/"),
-                "app" => String::from("~/Library/Application Support/rpcs3/"),
-                _ => String::from(""),
             }
-        }
-        None => String::from(""),
+            OS::Linux => String::from("~/.config/rpcs3/"),
+            OS::Macos => String::from("~/Library/Application Support/rpcs3/"),
+        },
+        Err(_) => return Err(()),
     };
 
     let relative_path = RelativePath::new("/dev_hdd0/");
