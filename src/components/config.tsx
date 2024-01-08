@@ -12,12 +12,10 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 
 const launchGame = (rpcs3Path: String, gameType: "BLJS10250" | "NPJB00512") => {
-  console.log("test");
   invoke("launch_game", {
     fullPath: rpcs3Path,
     gameType: gameType,
   });
-  console.log("test2");
 };
 
 function Config({
@@ -46,8 +44,6 @@ function Config({
       setModVersionSpinning(false);
     }, 1000);
   };
-  
-  console.log(enabled)
   
   return (
     <div className={enabled ? "" : "pointer-events-none"}>

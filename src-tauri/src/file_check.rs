@@ -51,13 +51,13 @@ pub async fn check_full_boost_game_version(
     let game_directory_string = dev_hdd0_relative_path.to_path(&rpcs3_directory).display().to_string();
     let game_directory = &game_directory_string;
     
-    println!("{}", game_directory);
-    
     // Check if NPJB00512 game version (Digital) exist
     // rpcs3 checks all of the param.sfo directories under "dev_hdd0/game", 
     // NPJB00512 is the default folder that the game is installed in
     // TODO: Use https://github.com/hippie68/sfo to read the param.sfo's game metadata instead of checking directory only
-    let npjb_sfo_paths = get_file_system_entries(game_directory, Some(r"npjb00512/param.sfo"));
+    let npjb_relative_path = RelativePath::new("npjb00512/param.sfo");
+    let npjb_directory = npjb_relative_path.to_path("").display().to_string();
+    let npjb_sfo_paths = get_file_system_entries(game_directory, Some(&npjb_directory));
     if let Some(_first_item) = npjb_sfo_paths.first() {
         game_payload.npjb = true;
     }
