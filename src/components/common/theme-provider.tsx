@@ -1,5 +1,5 @@
 ﻿import {createContext, useContext, useEffect} from "react"
-import {useStore} from "@/lib/store.ts";
+import {useConfigStore} from "@/lib/store/config.ts";
 import {shallow} from "zustand/shallow";
 
 type Theme = "dark" | "light" | "system"
@@ -21,7 +21,7 @@ const initialState: ThemeProviderState = {
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({children, ...props}: ThemeProviderProps) {
-  const {theme, setTheme} = useStore(
+  const {theme, setTheme} = useConfigStore(
     (state) => ({
       theme: state.theme,
       setTheme: state.setTheme,

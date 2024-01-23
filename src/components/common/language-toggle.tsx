@@ -1,14 +1,13 @@
 ﻿import {LanguagesIcon} from "lucide-react"
-
-import {Button} from "@/components/ui/button"
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
 import {useTranslation} from "react-i18next";
-import {useStore} from "@/lib/store.ts";
+import {useConfigStore} from "@/lib/store/config.ts";
 import {shallow} from "zustand/shallow";
+import IconButton from "@/components/common/icon-button.tsx";
 
 export function LanguageToggle() {
-    const { i18n } = useTranslation()
-    const { language, setLanguage } = useStore(
+    const { i18n, t } = useTranslation()
+    const { language, setLanguage } = useConfigStore(
       (state) => ({
           language: state.language,
           setLanguage: state.setLanguage,
@@ -24,10 +23,15 @@ export function LanguageToggle() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                    <LanguagesIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
-                    <span className="sr-only">Toggle theme</span>
-                </Button>
+              <div>
+                <IconButton
+                  buttonDescription={t("Language")}
+                  tooltipContent={t("Select language")}
+                  buttonIcon={<LanguagesIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all"/>}
+                  onClick={async () => {}}
+                  breakpoint={"md"}
+                />
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" defaultValue={language}>
                 <DropdownMenuItem onClick={() => changeLanguage("en")}>

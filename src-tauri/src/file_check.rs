@@ -1,6 +1,10 @@
 use std::collections::HashMap;
+use std::ffi::OsStr;
 use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::path::Path;
+use std::time::UNIX_EPOCH;
+use md5::Context;
 use relative_path::RelativePath;
 
 use tauri::{Manager};
@@ -80,4 +84,52 @@ pub async fn check_full_boost_game_version(
     }
 
     Ok(app.emit_all("rpcs3-games", game_payload).unwrap())
+}
+
+#[tauri::command]
+pub async fn check_file_md5(
+    app: tauri::AppHandle,
+    full_path: &str,
+) -> Result<(String), ()> {
+    let path: &Path = Path::new(full_path);
+    if !path.exists() {
+        return Err(());
+    }
+
+    let f = File::open(path).unwrap();
+    let len = f.metadata().unwrap().len();
+    let buf_len = len.min(1_000_000) as usize;
+    let mut buf = BufReader::with_capacity(buf_len, f);
+    let mut context = Context::new();
+
+    loop {
+        let part = buf.fill_buf().unwrap();
+        if part.is_empty() {
+            break;
+        }
+        context.consume(part);
+        let part_len = part.len();
+        buf.consume(part_len);
+    }
+
+    let digest = context.compute();
+    Ok(format!("{:x}", digest))
+}
+
+#[tauri::command]
+pub async fn get_file_modified_epoch(
+    app: tauri::AppHandle,
+    full_path: &str,
+) -> Result<(u64), ()> {
+    let path: &Path = Path::new(full_path);
+    if !path.exists() {
+        return Err(());
+    }
+
+    let f = File::open(path).unwrap();
+    let len = f.metadata().unwrap().len();
+    match f.metadata().unwrap().modified().unwrap().duration_since(UNIX_EPOCH) {
+        Ok(n) => Ok(n.as_secs()),
+        Err(_) => panic!("SystemTime before UNIX EPOCH!"),
+    }
 }

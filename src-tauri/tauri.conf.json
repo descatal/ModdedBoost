@@ -35,10 +35,13 @@
         "removeFile": true,
         "renameFile": true,
         "exists": true,
-        "scope": ["$APPCONFIG", "$APPCONFIG/*"]
+        "scope": ["$APPCONFIG", "$APPCONFIG/*", "$RESOURCE/resources/*"]
       },
       "path": {
         "all": true
+      },
+      "window": {
+        "setDecorations": true
       }
     },
     "bundle": {
@@ -51,6 +54,9 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
+      ],
+      "resources": [
+        "resources/*"
       ]
     },
     "security": {
@@ -60,10 +66,22 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Modded Boost Launcher",
-        "width": 540,
-        "height": 580
+        "title": "Modded Boost",
+        "width": 600,
+        "height": 650,
+        "transparent": true,
+        "decorations": false,
+        "minWidth": 520,
+        "minHeight": 570
       }
-    ]
+    ],
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://descatal.github.io/moddedboost.json"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMzMEY0RjU1MEIzNjc1OEMKUldTTWRUWUxWVThQdzgxcHZaL2hPaExkcmJXWHNFandSVUh2Vnl1T205OG0rYUJ2aUh5V01MdXUK"
+    }
   }
 }

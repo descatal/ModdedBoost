@@ -1,0 +1,270 @@
+{
+  "latestGameVersion": "1.10",
+  "latestModVersion": "1.005",
+  "modFiles": [
+    {
+      "gameTypes": [
+        "BLJS10250"
+      ],
+      "versions": [
+        "1.005"
+      ],
+      "remote": {
+        "identifiers": ["BLJS_EBOOT"]
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/EBOOT.BIN",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "1096756db1adf3d0e0a51e38c22f5157"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "NPJB00512"
+      ],
+      "versions": [
+        "1.005"
+      ],
+      "remote": {
+        "identifiers": ["NPJB_EBOOT"]
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/EBOOT.BIN",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "0cd91049b84ffb65d82e35dc069073df"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "BLJS10250",
+        "NPJB00512"
+      ],
+      "remote": {
+        "identifiers": ["PATCH_05"]
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_05_00.psarc",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "f79d250be403d84f8e5923b5101c05a4"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "BLJS10250",
+        "NPJB00512"
+      ],
+      "remote": {
+        "identifiers": ["PATCH_06"]
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_06_00.psarc",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "3083454d865208d2a84a537ac3a2b8ed"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "BLJS10250",
+        "NPJB00512"
+      ],
+      "remote": {
+        "identifiers": ["SPRX"]
+      },
+      "path": "dev_hdd0/customSPRX/FBmod.sprx",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "b9584e18d1d7ebe0a4bd9725f7367168"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "BLJS10250",
+        "NPJB00512"
+      ],
+      "remote": {
+        "identifiers": ["PATCH_YML"]
+      },
+      "path": "patches/imported_patch.yml",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "4b5356877c8707f2d059a8eb40c47b80"
+        }
+      ]
+    }
+  ],
+  "originalFiles": [
+    {
+      "gameTypes": [
+        "NPJB00512",
+        "BLJS10250"
+      ],
+      "remote": {
+        "identifiers": ["BLJS_105_PKG"],
+        "process": [
+          "pkg_unpack"
+        ],
+        "inner_path": "USRDIR/patch_01_00.psarc"
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_01_00.psarc",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "2dd1c988ae821367749e59e0a5e36bdd"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "NPJB00512",
+        "BLJS10250"
+      ],
+      "remote": {
+        "identifiers": ["BLJS_106_PKG"],
+        "process": [
+          "pkg_unpack"
+        ],
+        "inner_path": "USRDIR/patch_02_00.psarc"
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_02_00.psarc",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "8ef5a587a6a3df76e32100bab9c971a0"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "NPJB00512",
+        "BLJS10250"
+      ],
+      "remote": {
+        "identifiers": ["BLJS_107_PKG"],
+        "process": [
+          "pkg_unpack"
+        ],
+        "inner_path": "USRDIR/patch_03_00.psarc"
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_03_00.psarc",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "b3fd6d3e290a12c2d18e309b9fef2498"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "NPJB00512",
+        "BLJS10250"
+      ],
+      "remote": {
+        "identifiers": ["BLJS_108_PKG"],
+        "process": [
+          "pkg_unpack"
+        ],
+        "inner_path": "USRDIR/patch_04_00.psarc"
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_04_00.psarc",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "d00861802122c0f35d7b3db0c06a3056"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "NPJB00512",
+        "BLJS10250"
+      ],
+      "remote": {
+        "identifiers": ["BLJS_109_PKG"],
+        "process": [
+          "pkg_unpack"
+        ],
+        "inner_path": "USRDIR/patch_05_00.psarc"
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_05_00.psarc",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "2aa3a172171a966d7487b67a0433f42c"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "NPJB00512",
+        "BLJS10250"
+      ],
+      "remote": {
+        "identifiers": ["BLJS_110_PKG"],
+        "process": [
+          "pkg_unpack"
+        ],
+        "inner_path": "USRDIR/patch_06_00.psarc"
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_06_00.psarc",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "fa257b1af89384c8dcfba323f8bfb238"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "NPJB00512"
+      ],
+      "remote": {
+        "identifiers": ["NPJB_110_PKG"],
+        "process": [
+          "pkg_unpack"
+        ],
+        "inner_path": "USRDIR/EBOOT.BIN"
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/EBOOT.BIN",
+      "md5": [
+        {
+          "version": "1.00",
+          "value": "0c5a37d7a2961639a9f882cd3aae5e04"
+        },
+        {
+          "version": "latest",
+          "value": "5f78100250ea2f47513d1c400252bbf1"
+        }
+      ]
+    },
+    {
+      "gameTypes": [
+        "BLJS10250"
+      ],
+      "remote": {
+        "identifiers": ["BLJS_110_PKG"],
+        "process": [
+          "pkg_unpack"
+        ],
+        "inner_path": "USRDIR/EBOOT.BIN"
+      },
+      "path": "dev_hdd0/game/{GAME_ID}/USRDIR/EBOOT.BIN",
+      "md5": [
+        {
+          "version": "latest",
+          "value": "b515155bdfb6b0579f06cba2f335fe30"
+        }
+      ]
+    }
+  ]
+}

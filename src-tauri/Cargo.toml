@@ -13,7 +13,7 @@ edition = "2021"
 tauri-build = { version = "1.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.5", features = [ "path-all", "dialog-all", "fs-all", "shell-open"] }
+tauri = { version = "1.5", features = [ "window-set-decorations", "updater", "path-all", "dialog-all", "fs-all", "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 notify = "6.1.1"
@@ -24,6 +24,11 @@ serde_yaml = "0.9.30"
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 relative-path = "1.9.2"
 async-process = "2.0.1"
+md5 = "0.7.0"
+window-vibrancy = "0.4.3"
+reqwest = "0.11.23"
+thiserror = "1.0.52"
+tauri-plugin-upload = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
