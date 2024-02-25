@@ -41,7 +41,7 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install # change this to npm or pnpm depending on which one you use
 
-      - uses: JonasKruckenberg/tauri-build@v1
+      - uses: JonasKruckenberg/tauri-build@v2
         id: tauri_build
 
       - uses: actions/upload-artifact@v3
