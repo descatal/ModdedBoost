@@ -1,19 +1,19 @@
 import {updateMetadata} from "@/lib/remote.ts";
 import {resolveResource} from "@tauri-apps/api/path";
-import {readTextFile} from "@tauri-apps/api/fs";
+import {readTextFile} from "@tauri-apps/plugin-fs";
 
 export type Mirrors = {
-  mirrors: MirrorGroup[],
+  mirrorGroups: MirrorGroup[],
 };
 
 export type MirrorGroup = {
-  groups: string[],
-  files: RemoteFiles[]
+  name: string,
+  remotes: Remotes[]
 };
 
-export type RemoteFiles = {
-  identifier: string,
-  remotes: string[]
+export type Remotes = {
+  name: string,
+  rcloneName: string
 }
 
 export async function loadMirrors(getRemote: boolean) {
@@ -23,17 +23,4 @@ export async function loadMirrors(getRemote: boolean) {
   const mirrors: Mirrors = JSON.parse(await readTextFile(resourcePath))
 
   return { ...mirrors } as Mirrors;
-}
-
-export function concatMirrors(mirrors: Mirrors) {
-  const mirrorsMap = new Map<string, RemoteFiles[]>;
-
-  mirrors.mirrors.forEach(item => {
-    item.groups.forEach(g => {
-      const existingFiles = mirrorsMap.get(g) ?? []
-      item.files.forEach(file => existingFiles.push(file)) 
-      mirrorsMap.set(g, existingFiles)
-    })
-  });
-  return mirrorsMap
 }

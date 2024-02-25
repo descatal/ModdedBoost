@@ -1,6 +1,7 @@
 use std::ffi::OsStr;
 use std::path::Path;
 use walkdir::WalkDir;
+use crate::os::OS;
 
 #[tauri::command]
 pub fn get_file_system_entries(full_path: &str, file_path_filter: Option<&str>) -> Vec<String> {
@@ -18,13 +19,6 @@ pub fn get_file_system_entries(full_path: &str, file_path_filter: Option<&str>) 
     }
 
     matched_files
-}
-
-#[derive(Clone, serde::Serialize)]
-pub enum OS {
-    Windows,
-    Linux,
-    Macos
 }
 
 pub fn get_rpcs3_os(full_path: &str) -> Result<OS, ()>

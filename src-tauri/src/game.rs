@@ -1,5 +1,7 @@
 use async_process::Command;
-use crate::file_handler::{get_file_system_entries, get_rpcs3_os, OS};
+
+use crate::file_handler::{get_file_system_entries, get_rpcs3_os};
+use crate::os::OS;
 
 #[tauri::command]
 pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
@@ -10,6 +12,7 @@ pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
         "bljs" => r"BLJS10250\usrdir\eboot.bin",
         _ => "",
     };
+    
     // find by game_type_path
     // 1. we don't need the rpcs3.exe in path, so we need remove it
     let find_eboot_path_string: &String = &full_path.replace("rpcs3.exe", "");

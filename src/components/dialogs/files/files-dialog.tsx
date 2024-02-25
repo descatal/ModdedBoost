@@ -14,17 +14,15 @@ import {
   DrawerTrigger
 } from "@/components/ui/drawer.tsx";
 import IconButton from "@/components/common/icon-button.tsx";
-import {Files} from "@/components/config.tsx";
+import {ModFiles} from "@/lib/metadata.ts";
 
 interface FileDialogsProps {
-  modVersion: string;
-  gameVersion: string;
   gameId: string;
-  files: Files[];
+  files: ModFiles[];
   triggerContent: React.ReactNode;
 }
 
-const FilesDialog = ({modVersion, gameVersion, gameId, files, triggerContent}: FileDialogsProps) => {
+const FilesDialog = ({gameId, files, triggerContent}: FileDialogsProps) => {
   const {t} = useTranslation();
   
   return (
@@ -67,9 +65,6 @@ const FilesDialog = ({modVersion, gameVersion, gameId, files, triggerContent}: F
               {files ? files.map(item => {
                 return <FilesTableRow
                   key={item.path}
-                  modVersion={modVersion}
-                  gameVersion={gameVersion}
-                  actualFileVersion={item.currentVersion}
                   file={item}/>
                 }) : <></>
               }

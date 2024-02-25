@@ -1,161 +1,20 @@
 {
-  "mirrors": [
+  "mirrorGroups": [
     {
-      "groups": ["normal"],
-      "files": [
+      "name": "normal",
+      "remotes": [
         {
-          "identifier": "BLJS_EBOOT",
-          "remotes": [
-            "https://drive.google.com/uc?export=download&id=1vW2yQlPkQ95A4fSuY-kE_yYLGdCshcL-"
-          ]
-        },
-        {
-          "identifier": "NPJB_EBOOT",
-          "remotes": [
-            "https://drive.google.com/uc?export=download&id=13QVHtNgiQXdqTLamlAu8QFMdWelhQeci"
-          ]
-        },
-        {
-          "identifier": "SPRX",
-          "remotes": [
-            "https://drive.google.com/uc?export=download&id=196R0jVyAAdTUlI8cPlPvilyVr4F29kKn"
-          ]
-        },
-        {
-          "identifier": "PATCH_YML",
-          "remotes": [
-            "https://drive.google.com/uc?export=download&id=13Xu_bINrqwsx0bL4HS70ZwEYtdOreewZ"
-          ]
-        },
-        {
-          "identifier": "PATCH_05",
-          "remotes": [
-            "https://drive.google.com/uc?export=download&id=1VdnTg96D9V9Lrg1xk9UV3DXYuu0wlrOH"
-          ]
-        },
-        {
-          "identifier": "PATCH_06",
-          "remotes": [
-            "https://drive.google.com/uc?export=download&id=160rjhhH4Md4qSbXbjK0DALpNwEW5uN48"
-          ]
+          "name": "Google Drive",
+          "rcloneName": "googledrive"
         }
       ]
     },
     {
-      "groups": ["china"],
-      "files": [
+      "name": "china",
+      "remotes": [
         {
-          "identifier": "BLJS_EBOOT",
-          "remotes": [
-            "https://158-ctc-dd.tv002.com/down/c33723551f512bda513c4bd6557d8534/EBOOT.BIN?cts=D202A188A137A42F99088&ctp=202A188A137A42&ctt=1705237887&limit=1&spd=260000&ctk=c33723551f512bda513c4bd6557d8534&chk=de4a223c821103504b78046af869aa5d-6354912"
-          ]
-        },
-        {
-          "identifier": "NPJB_EBOOT",
-          "remotes": [
-            "https://158-ctc-dd.tv002.com/down/8f43b103ece0fd82503565bdda2bb345/EBOOT.BIN?cts=D202A188A137A42F99088&ctp=202A188A137A42&ctt=1705237918&limit=1&spd=260000&ctk=8f43b103ece0fd82503565bdda2bb345&chk=6d675f813719137103f031a2398584d2-6355040"
-          ]
-        },
-        {
-          "identifier": "SPRX",
-          "remotes": [
-            "https://158-ctc-dd.tv002.com/down/faa4d3dd28e604065b2e42892b32fd96/FBmod.sprx?cts=D202A188A137A42F99088&ctp=202A188A137A42&ctt=1705237830&limit=1&spd=260000&ctk=faa4d3dd28e604065b2e42892b32fd96&chk=993b9e1246d87dd8f475e9a799b501cd-1744400"
-          ]
-        },
-        {
-          "identifier": "PATCH_YML",
-          "remotes": [
-            "https://158-ctc-dd.tv002.com/down/0568b35aefdfe35488c5afb4d2db0f64/imported_patch.yml?cts=D202A188A137A42F99088&ctp=202A188A137A42&ctt=1705237806&limit=1&spd=260000&ctk=0568b35aefdfe35488c5afb4d2db0f64&chk=4b5356877c8707f2d059a8eb40c47b80-9794"
-          ]
-        },
-        {
-          "identifier": "PATCH_05",
-          "remotes": [
-            "https://drive.google.com/uc?export=download&id=1VdnTg96D9V9Lrg1xk9UV3DXYuu0wlrOH"
-          ]
-        },
-        {
-          "identifier": "PATCH_06",
-          "remotes": [
-            "https://158-ctc-dd.tv002.com/down/e9d77f635fdb1aea660b7454626e6567/patch_06_00.psarc?cts=D202A188A137A42F99088&ctp=202A188A137A42&ctt=1705227877&limit=1&spd=260000&ctk=e9d77f635fdb1aea660b7454626e6567&chk=4c056a043ba4f7d9d93650f7cb00b3b6-108930421"
-          ]
-        }
-      ]
-    },
-    {
-      "groups": ["normal", "china"],
-      "files": [
-        {
-          "identifier": "BLJS_105_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/BLJS10250/BLJS10250_T11/140dac507ba5b9bb/JP0700-BLJS10250_00-FULLBOOST000105A-A0105-V0100-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "BLJS_106_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/BLJS10250/BLJS10250_T11/140dac507ba5b9bb/JP0700-BLJS10250_00-FULLBOOST000106A-A0106-V0100-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "BLJS_107_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/BLJS10250/BLJS10250_T11/140dac507ba5b9bb/JP0700-BLJS10250_00-FULLBOOST000107A-A0107-V0100-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "BLJS_108_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/BLJS10250/BLJS10250_T11/140dac507ba5b9bb/JP0700-BLJS10250_00-FULLBOOST000108A-A0108-V0100-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "BLJS_109_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/BLJS10250/BLJS10250_T11/140dac507ba5b9bb/JP0700-BLJS10250_00-FULLBOOST000109A-A0109-V0101-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "BLJS_110_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/BLJS10250/BLJS10250_T11/140dac507ba5b9bb/JP0700-BLJS10250_00-FULLBOOST000110A-A0110-V0101-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "NPJB_105_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/NPJB00512/NPJB00512_T11/95e93bb8fc85369e/JP0700-NPJB00512_00-FULLBOOST000100A-A0106-V0100-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "NPJB_106_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/NPJB00512/NPJB00512_T11/95e93bb8fc85369e/JP0700-NPJB00512_00-FULLBOOST000100A-A0107-V0100-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "NPJB_107_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/NPJB00512/NPJB00512_T11/95e93bb8fc85369e/JP0700-NPJB00512_00-FULLBOOST000100A-A0105-V0100-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "NPJB_108_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/NPJB00512/NPJB00512_T11/95e93bb8fc85369e/JP0700-NPJB00512_00-FULLBOOST000100A-A0108-V0100-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "NPJB_109_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/NPJB00512/NPJB00512_T11/95e93bb8fc85369e/JP0700-NPJB00512_00-FULLBOOST000100A-A0109-V0101-PE.pkg"
-          ]
-        },
-        {
-          "identifier": "NPJB_110_PKG",
-          "remotes": [
-            "http://b0.ww.np.dl.playstation.net/tppkg/np/NPJB00512/NPJB00512_T11/95e93bb8fc85369e/JP0700-NPJB00512_00-FULLBOOST000100A-A0110-V0101-PE.pkg"
-          ]
+          "name": "Teracloud",
+          "rcloneName": "teracloud"
         }
       ]
     }

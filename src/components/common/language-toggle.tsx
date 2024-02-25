@@ -25,9 +25,10 @@ export function LanguageToggle() {
             <DropdownMenuTrigger asChild>
               <div>
                 <IconButton
+                  buttonVariant={"ghost"}
                   buttonDescription={t("Language")}
                   tooltipContent={t("Select language")}
-                  buttonIcon={<LanguagesIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all"/>}
+                  buttonIcon={<LanguagesIcon className="h-[1rem] w-[1rem] rotate-0 scale-100 transition-all"/>}
                   onClick={async () => {}}
                   breakpoint={"md"}
                 />

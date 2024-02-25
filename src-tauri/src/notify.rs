@@ -1,6 +1,7 @@
 ﻿
 use notify_debouncer_full::{notify::*, new_debouncer, DebounceEventResult};
 use std::{time::Duration, path::Path};
+use tauri::Manager;
 
 #[tauri::command]
 pub fn notify() {

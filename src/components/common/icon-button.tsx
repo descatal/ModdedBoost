@@ -1,27 +1,62 @@
 import React from 'react';
 import {Button} from "@/components/ui/button.tsx";
 import TooltipComponent from "@/components/common/tooltip-component.tsx";
+import {Loader2} from "lucide-react";
 
 type IconButtonProps = {
   buttonDescription: string,
-  tooltipContent: string,
   buttonIcon: React.ReactNode,
   onClick: React.MouseEventHandler
-  breakpoint?: "sm" | "md" | "lg" | "xl" | "2xl"
+  iconPosition? : "left" | "right",
+  tooltipContent?: string,
+  buttonClassName?: string,
+  buttonVariant?: "outline" | "link" | "default" | "destructive" | "secondary" | "ghost" | null | undefined,
+  buttonSize?: "default" | "sm" | "lg" | "icon" | null | undefined
+  breakpoint?: "sm" | "md" | "lg" | "xl" | "2xl" | "none"
+  isLoading?: boolean,
+  isDisabled?: boolean,
 }
 
-const IconButton = ({buttonDescription, tooltipContent, buttonIcon, onClick, breakpoint = "sm"}: IconButtonProps) => {
+const IconButton = ({
+                      buttonDescription,
+                      buttonIcon,
+                      onClick,
+                      iconPosition = "left",
+                      tooltipContent = "",
+                      buttonVariant = "outline",
+                      buttonClassName = "",
+                      buttonSize = "sm",
+                      breakpoint = "sm",
+                      isLoading = false,
+                      isDisabled = false,
+                    }: IconButtonProps) => {
+
+  const icon =
+    <div className={`${breakpoint != "none" ? `${breakpoint}:${iconPosition == "left" ? "mr-2" : "ml-2"} w-4` : ''}`}>
+      {isLoading ? <Loader2 className={"mr-2 w-4 animate-spin"}/> : buttonIcon}
+    </div>
+  
+  const description =
+    buttonDescription ? <div
+        className={`${iconPosition == "left" ? "ml-1" : "mr-2"} ${breakpoint != "none" ? `hidden ${breakpoint}:block` : ''}`}>{buttonDescription}</div> : ""
+
   return (
     <div>
       <TooltipComponent
         tooltipContent={tooltipContent}
         triggerContent={
           <div>
-            <Button variant="outline" size="sm" onClick={onClick}>
-              <div className={`${buttonDescription ? `${breakpoint}:mr-2 h-4 w-4` : ""}`}>
-                {buttonIcon}
-              </div>
-              {buttonDescription ? <p className={`hidden ${breakpoint}:block`}>{buttonDescription}</p> : ""}
+            <Button
+              disabled={isLoading || isDisabled}
+              type={"button"}
+              variant={buttonVariant}
+              className={buttonClassName}
+              size={buttonSize}
+              onClick={onClick}>
+              {iconPosition == "left" 
+                ? <>{icon} {description}</>
+                : <>{description} {icon}</>
+              }
             </Button>
           </div>
         }>

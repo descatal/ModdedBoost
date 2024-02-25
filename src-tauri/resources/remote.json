@@ -1,4 +1,4 @@
 {
-  "mirrors": "https://descatal.github.io/mirrors.json",
-  "metadata": "https://descatal.github.io/metadata.json"
+  "mirrors": "https://descatal.github.io/cdn/metadata/mirrors.json",
+  "metadata": "https://descatal.github.io/cdn/metadata/metadata.json"
 }

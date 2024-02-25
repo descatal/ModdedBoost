@@ -1,54 +1,51 @@
 use std::collections::HashMap;
-use std::ffi::OsStr;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::path::Path;
-use std::time::UNIX_EPOCH;
-use md5::Context;
+
 use relative_path::RelativePath;
+use tauri::Manager;
 
-use tauri::{Manager};
-use tauri::api::path::home_dir;
-
-use crate::file_handler::{get_file_system_entries, get_rpcs3_os, OS};
+use crate::file_handler::get_file_system_entries;
+use crate::os::{get_os, OS};
 
 #[derive(Clone, serde::Serialize)]
-struct FullBoostVersions {
-    bljs: bool,
-    npjb: bool,
+pub struct FullBoostVersions {
+    pub bljs: bool,
+    pub npjb: bool,
 }
 
 #[tauri::command]
-pub async fn check_full_boost_game_version(
+pub async fn check_game_versions(
     app: tauri::AppHandle,
     full_path: &str,
-) -> Result<(), ()> {
-    let mut game_payload: FullBoostVersions = FullBoostVersions {
+) -> Result<FullBoostVersions, ()> {
+    let mut fullboost_versions: FullBoostVersions = FullBoostVersions {
         bljs: false,
         npjb: false,
     };
 
     // Don't need to continue parsing if the specified executable is invalid
     let path: &Path = Path::new(full_path);
-    let rpcs3_directory = match get_rpcs3_os(full_path) {
-        Ok(os) => match os {
-            OS::Windows => {
-                match path.parent() {
-                    Some(parent_path) => parent_path.to_str().unwrap().to_string(),
-                    None => return Err(()),
-                }
+    if !path.exists() {
+        return Err(())
+    } 
+    
+    let rpcs3_directory = match get_os() {
+        OS::Windows => {
+            match path.parent() {
+                Some(parent_path) => parent_path.to_str().unwrap().to_string(),
+                None => return Err(()),
             }
-            OS::Linux => { 
-                let home_dir = home_dir().unwrap().as_path().display().to_string();
-                let config_rpcs3_relative_path = RelativePath::new(".config/rpcs3");
-                let path_buf = config_rpcs3_relative_path.to_path(&home_dir);
-                let path_str = path_buf.to_str().unwrap();
-                let path_string = path_str.to_string();
-                path_string
-            },
-            OS::Macos => String::from("~/Library/Application Support/rpcs3"),
+        }
+        OS::Linux => { 
+            let home_dir = app.path().home_dir().unwrap().as_path().display().to_string();
+            let config_rpcs3_relative_path = RelativePath::new(".config/rpcs3");
+            let path_buf = config_rpcs3_relative_path.to_path(&home_dir);
+            let path_str = path_buf.to_str().unwrap();
+            let path_string = path_str.to_string();
+            path_string
         },
-        Err(_) => return Err(()),
+        OS::Macos => String::from("~/Library/Application Support/rpcs3")
     };
 
     let dev_hdd0_relative_path = RelativePath::new("dev_hdd0");
@@ -63,7 +60,7 @@ pub async fn check_full_boost_game_version(
     let npjb_directory = npjb_relative_path.to_path("").display().to_string();
     let npjb_sfo_paths = get_file_system_entries(game_directory, Some(&npjb_directory));
     if let Some(_first_item) = npjb_sfo_paths.first() {
-        game_payload.npjb = true;
+        fullboost_versions.npjb = true;
     }
 
     // Check if NPJB00512 game version (Disc) exist
@@ -79,57 +76,17 @@ pub async fn check_full_boost_game_version(
 
         // Try to check if there's any key with 'BLJS10250'
         if let Some(_value) = yaml_map.get("BLJS10250") {
-            game_payload.bljs = true;
+            fullboost_versions.bljs = true;
         }
     }
 
-    Ok(app.emit_all("rpcs3-games", game_payload).unwrap())
+    Ok(fullboost_versions)
 }
 
 #[tauri::command]
-pub async fn check_file_md5(
-    app: tauri::AppHandle,
+pub async fn check_directory_exist(
     full_path: &str,
-) -> Result<(String), ()> {
-    let path: &Path = Path::new(full_path);
-    if !path.exists() {
-        return Err(());
-    }
-
-    let f = File::open(path).unwrap();
-    let len = f.metadata().unwrap().len();
-    let buf_len = len.min(1_000_000) as usize;
-    let mut buf = BufReader::with_capacity(buf_len, f);
-    let mut context = Context::new();
-
-    loop {
-        let part = buf.fill_buf().unwrap();
-        if part.is_empty() {
-            break;
-        }
-        context.consume(part);
-        let part_len = part.len();
-        buf.consume(part_len);
-    }
-
-    let digest = context.compute();
-    Ok(format!("{:x}", digest))
-}
-
-#[tauri::command]
-pub async fn get_file_modified_epoch(
-    app: tauri::AppHandle,
-    full_path: &str,
-) -> Result<(u64), ()> {
-    let path: &Path = Path::new(full_path);
-    if !path.exists() {
-        return Err(());
-    }
-
-    let f = File::open(path).unwrap();
-    let len = f.metadata().unwrap().len();
-    match f.metadata().unwrap().modified().unwrap().duration_since(UNIX_EPOCH) {
-        Ok(n) => Ok(n.as_secs()),
-        Err(_) => panic!("SystemTime before UNIX EPOCH!"),
-    }
+) -> Result<(bool), ()> {
+    let path: &Path = Path::new(&full_path);
+    Ok(path.exists())
 }
