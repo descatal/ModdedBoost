@@ -20,11 +20,7 @@ pub async fn unpack_psarc(
         .resolve(format!("resources/tools/booststudio/{}", rclone_name), BaseDirectory::Resource)
         .expect("failed to resolve resource");
 
-    let input_arg = format!("--input \"{}\"", source_path); 
-    let output_arg = format!("--output \"{}\"", destination_path); 
-    let arg = format!("psarc unpack {} {}", input_arg, output_arg);
     let mut cmd = Command::new(booststudio_path);
-    
     cmd.arg("psarc").arg("unpack").arg("--input").arg(format!("{}", source_path)).arg("--output").arg(format!("{}", destination_path));
     cmd.stdout(Stdio::piped());
 
@@ -63,11 +59,19 @@ pub async fn pack_psarc(
     let input_arg = format!("--input {}", source_directory_path);
     let output_arg = format!("--output {}", destination_directory_path);
     let filename_arg = format!("--filename {}", output_file_name);
-    let arg = format!("psarc pack {} {} {}", input_arg, output_arg, filename_arg);
-    let mut cmd = Command::new(booststudio_path);
 
-    cmd.arg(arg);
+    let mut cmd = Command::new(booststudio_path);
+    cmd.arg("psarc")
+        .arg("pack")
+        .arg("--input")
+        .arg(format!("{}", source_directory_path))
+        .arg("--output")
+        .arg(format!("{}", destination_directory_path))
+        .arg("--filename")
+        .arg(format!("{}", output_file_name));
     cmd.stdout(Stdio::piped());
+
+    println!("{}", format!("{:?}", cmd).replace("\"", ""));
 
     let mut child = cmd.spawn()
         .expect("failed to spawn command");
@@ -77,6 +81,15 @@ pub async fn pack_psarc(
 
     let mut reader = BufReader::new(stdout).lines();
 
+    // Ensure the child process is spawned in the runtime, so it can
+    // make progress on its own while we await for any output.
+    tokio::spawn(async move {
+        let status = child.wait().await
+            .expect("child process encountered an error");
+
+        println!("child status was: {}", status);
+    });
+    
     while let Some(line) = reader.next_line().await.expect("") {
         let trimmed_line = line.trim();
         println!("{}", trimmed_line)

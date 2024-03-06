@@ -15,7 +15,7 @@ pub async fn check_initialized(
 ) -> Result<bool, ()> {
     let rpcs3_path = Path::new(full_path);
     let rpcs3_directory = rpcs3_path.parent().unwrap();
-    let cache_path_str = rpcs3_directory.join(".moddedboost");
+    let cache_path_str = rpcs3_directory.join(".moddedboost").join("psarc");
 
     let required_folders = vec![
         "patch_01_00",
@@ -53,7 +53,7 @@ pub async fn initialize(
     let rpcs3_directory = rpcs3_path.parent().unwrap();
 
     // Path to the cache folder is the ".moddedboost" folder.
-    let cache_path_str = rpcs3_directory.join(".moddedboost");
+    let cache_path_str = rpcs3_directory.join(".moddedboost").join("psarc");
     let cache_path = Path::new(&cache_path_str);
 
     create_dir_all(cache_path).unwrap();

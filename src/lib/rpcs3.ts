@@ -2,7 +2,7 @@ import {invoke} from "@tauri-apps/api/core";
 import {useAppStore} from "@/lib/store/app.ts";
 
 
-export async function CheckRpcs3Validity(rpcs3Path: string): Promise<boolean> {
+export async function checkRpcs3Validity(rpcs3Path: string): Promise<boolean> {
   const {setOpenRunningProcessModal} = useAppStore.getState()
   const validExecutable: boolean = await invoke("validate_rpcs3_executable", {fullPath: rpcs3Path})
   
@@ -19,7 +19,7 @@ export async function CheckRpcs3Validity(rpcs3Path: string): Promise<boolean> {
   return validExecutable
 }
 
-export async function CheckRpcs3Initialized(rpcs3Path: string): Promise<boolean> {
+export async function checkRpcs3Initialized(rpcs3Path: string): Promise<boolean> {
   return await invoke("check_initialized", {fullPath: rpcs3Path})
 }
 

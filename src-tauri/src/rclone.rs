@@ -15,11 +15,11 @@ pub async fn rclone(
     command: &str,
     remote: &str,
     remote_path: &str,
-    cache_path: &str,
+    target_path: &str,
     additional_flags: &str,
     exclude_items: Vec<String>,
     listener_id: &str,
-) {
+) -> Result<bool, ()> {
     let rclone_name = match get_os() {
         OS::Windows => "rclone-win.exe",
         OS::Linux => "rclone-linux.exe",
@@ -92,7 +92,7 @@ pub async fn rclone(
     }
 
     cmd.arg(format!("{}", remote_path))
-        .arg(format!("{}", cache_path));
+        .arg(format!("{}", target_path));
 
     println!("{}", format!("{:?}", cmd).replace("\"", ""));
     
@@ -120,11 +120,18 @@ pub async fn rclone(
         println!("child status was: {}", status);
     });
 
+    let mut execution_success = true;
     let event_name = format!("rclone_{}", listener_id).to_string();
     app.emit(&event_name, "start").expect("failed to emit progress!");
     while let Some(line) = reader.next_line().await.expect("") {
         app.emit(&event_name, format!("\r{}", line)).expect("failed to emit progress!");
         println!("\r{}", line);
+        
+        if line.to_lowercase().contains("errors:") { 
+            execution_success = false
+        }
     }
     app.emit(&event_name, "end").expect("failed to emit progress!");
+    
+    Ok(execution_success)
 }

@@ -10,8 +10,8 @@ use crate::os::{get_os, OS};
 
 #[derive(Clone, serde::Serialize)]
 pub struct FullBoostVersions {
-    pub bljs: bool,
-    pub npjb: bool,
+    pub BLJS10250: bool,
+    pub NPJB00512: bool,
 }
 
 #[tauri::command]
@@ -20,8 +20,8 @@ pub async fn check_game_versions(
     full_path: &str,
 ) -> Result<FullBoostVersions, ()> {
     let mut fullboost_versions: FullBoostVersions = FullBoostVersions {
-        bljs: false,
-        npjb: false,
+        BLJS10250: false,
+        NPJB00512: false,
     };
 
     // Don't need to continue parsing if the specified executable is invalid
@@ -60,7 +60,7 @@ pub async fn check_game_versions(
     let npjb_directory = npjb_relative_path.to_path("").display().to_string();
     let npjb_sfo_paths = get_file_system_entries(game_directory, Some(&npjb_directory));
     if let Some(_first_item) = npjb_sfo_paths.first() {
-        fullboost_versions.npjb = true;
+        fullboost_versions.NPJB00512 = true;
     }
 
     // Check if NPJB00512 game version (Disc) exist
@@ -76,7 +76,7 @@ pub async fn check_game_versions(
 
         // Try to check if there's any key with 'BLJS10250'
         if let Some(_value) = yaml_map.get("BLJS10250") {
-            fullboost_versions.bljs = true;
+            fullboost_versions.BLJS10250 = true;
         }
     }
 

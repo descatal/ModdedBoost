@@ -6,7 +6,7 @@ import './i18n';
 import {TooltipProvider} from "@/components/ui/tooltip.tsx";
 import {RouterProvider} from "react-router-dom";
 import Modals from "@/components/modal/modals.tsx";
-import TitleBar from "@/components/common/title-bar.tsx";
+import TitleBar from "@/components/common/title-bar/title-bar.tsx";
 import {Router} from "@/Router.tsx";
 import StoreLoaded from "@/components/store-loaded.tsx";
 

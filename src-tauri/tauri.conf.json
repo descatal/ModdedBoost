@@ -8,8 +8,8 @@
         "decorations": false,
         "fullscreen": false,
         "height": 740,
-        "minHeight": 620,
-        "minWidth": 528,
+        "minHeight": 740,
+        "minWidth": 680,
         "resizable": true,
         "title": "Modded Boost",
         "transparent": true,
@@ -43,12 +43,14 @@
       "open": true
     },
     "updater": {
+      "dialog": true,
+      "active": true,
       "endpoints": [
-        "https://descatal.github.io/moddedboost.json"
+        "https://descatal.github.io/cdn/updates/moddedboost.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMzMEY0RjU1MEIzNjc1OEMKUldTTWRUWUxWVThQdzgxcHZaL2hPaExkcmJXWHNFandSVUh2Vnl1T205OG0rYUJ2aUh5V01MdXUK"
     }
   },
   "productName": "ModdedBoost",
-  "version": "0.0.0"
+  "version": "0.1.0"
 }

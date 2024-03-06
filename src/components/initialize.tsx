@@ -11,7 +11,7 @@ import IconButton from "@/components/common/icon-button.tsx";
 import {useAppStore} from "@/lib/store/app.ts";
 import {FileResponse} from "@tauri-apps/plugin-dialog";
 import {useNavigate} from "react-router-dom";
-import {CheckRpcs3Initialized, CheckRpcs3Validity} from "@/lib/rpcs3.ts";
+import {checkRpcs3Initialized, checkRpcs3Validity} from "@/lib/rpcs3.ts";
 
 export default function Initialize() {
   const {t, i18n} = useTranslation();
@@ -32,7 +32,7 @@ export default function Initialize() {
   const debouncedHandleChange = debounce(async () => {
     const currentPath = inputRef.current!.value;
     await setRpcs3Path(currentPath);
-    await processDirectory(currentPath);
+    await processDirectory(true, currentPath);
   }, 500);
 
   const changeRpcs3Path = async (selectedPath: FileResponse | null) => {
@@ -42,7 +42,7 @@ export default function Initialize() {
     inputRef.current!.value = selectedPath.path
     debouncedHandleChange.cancel() // cancel in case someone else is typing
     await setRpcs3Path(selectedPath.path)
-    await processDirectory(selectedPath.path);
+    await processDirectory(true,  selectedPath.path);
   };
 
   // Handle manual inputs
@@ -54,20 +54,20 @@ export default function Initialize() {
     debouncedHandleChange();
   };
 
-  const processDirectory = async (path: string) => {
-    toast.info(i18n.t("Rpcs3 path changed, processing directory..."));
+  const processDirectory = async (showToast: boolean, path: string) => {
+    if (showToast) toast.info(i18n.t("Rpcs3 path changed, processing directory..."));
 
     setIsChecking(true)
-    const isValidRpcs3: boolean = await CheckRpcs3Validity(path)
+    const isValidRpcs3: boolean = await checkRpcs3Validity(path)
     setIsValid(isValidRpcs3)
     
     if (isValidRpcs3) {
-      toast.success(i18n.t("Valid executable found!"));
+      if (showToast) toast.success(i18n.t("Valid executable found!"));
       
-      const isInitialized: boolean = await CheckRpcs3Initialized(path)
+      const isInitialized: boolean = await checkRpcs3Initialized(path)
       setInitialized(isInitialized)
     } else {
-      toast.error(i18n.t("The specified file path is not a valid rpcs3 executable!"));
+      if (showToast) toast.error(i18n.t("The specified file path is not a valid rpcs3 executable!"));
     }
     setIsChecking(false)
   }
@@ -76,6 +76,16 @@ export default function Initialize() {
     // Invoke the debounced function for first time loading
     debouncedHandleChange()
   }, []);
+
+  useEffect(() => {
+    const reprocessDirectory = async () => {
+      await processDirectory(false, rpcs3Path)
+    }
+    
+    if (!isInitializing) {
+      reprocessDirectory().catch(console.error)
+    }
+  }, [isInitializing]);
 
   return (
     <main className="min-h-screen flex h-screen">

@@ -1,24 +1,17 @@
 import {create} from "zustand";
 import {createJSONStorage, persist} from "zustand/middleware";
 
-export enum ProgressType{
-  Download,
-  Copy,
-  Install
-}
-
 export interface ProcessListProps {
-  processList: ProcessProps[];
-  addOrUpdateProcess: (process: ProcessProps) => void;
-  removeProcess: (process: ProcessProps) => void;
-  clearProcess: () => void;
+  processes: ProcessProps[];
+  addOrUpdateProcess: (process: ProcessProps) => Promise<void>;
+  deleteProcess: (id: string) => Promise<void>;
 }
 
 export interface ProcessProps {
-  id: number,
+  id: string,
   status: string,
   name: string,
-  type: ProgressType,
+  type: string,
   progress: number
   total: number
   percentage: number
@@ -26,21 +19,21 @@ export interface ProcessProps {
 
 export const useProcessListStore = create(persist<ProcessListProps>(
   (set) => ({
-    processList: [],
-    addOrUpdateProcess: (process: ProcessProps) => set((state: { processList: ProcessProps[]; }) => {
-      const index = state.processList.findIndex(item => item.id === process.id)
-      let newList = [...state.processList];
-      if (index === -1)
-        newList.push(process)
-      else
-        newList[index] = process
-
-      return { ...state, processList: newList }
+    processes: [],
+    addOrUpdateProcess: async (process: ProcessProps) => set((state) => {
+      let newArray = state.processes.map(x => x);
+      const existingProcessId = state.processes.findIndex(filter => filter.id === process.id);
+      if (existingProcessId != -1) {
+        newArray[existingProcessId] = process
+      } else {
+        newArray.push(process)
+      }
+      return { ...state, processes: newArray }
     }),
-    removeProcess: (process: ProcessProps) => set((state: {
-      processList: ProcessProps[];
-    }) => ({processList: state.processList.filter(x => x.id !== process.id)})),
-    clearProcess: () => set(() => ({processList: []}))
+    deleteProcess: async (id: string) => set((state) => {
+      const newArray = state.processes.filter(filter => filter.id != id);      
+      return { ...state, processes: newArray }
+    }),
   }),
   {
     name: 'process-storage', // name of the item in the storage (must be unique)

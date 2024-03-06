@@ -9,33 +9,39 @@ import {Input} from "@/components/ui/input.tsx";
 import {VscFolderOpened} from "react-icons/vsc";
 import {useNavigate} from "react-router-dom";
 import {INITIALIZE_ROUTE} from "@/lib/constants.ts";
-import {CheckRpcs3Initialized, CheckRpcs3Validity} from "@/lib/rpcs3.ts";
+import {checkRpcs3Initialized, checkRpcs3Validity} from "@/lib/rpcs3.ts";
 import {invoke} from "@tauri-apps/api/core";
 import {Skeleton} from "@/components/ui/skeleton.tsx";
-import {loadMirrors, Mirrors} from "@/lib/mirrors.ts";
-import {loadMetadata, Metadata} from "@/lib/metadata.ts";
+import {loadMetadata} from "@/lib/metadata.ts";
+import {useAppStore} from "@/lib/store/app.ts";
+import {shallow} from "zustand/shallow";
 
-export type GameVersions = {
-  bljs: boolean;
-  npjb: boolean;
-};
+type DetectedGameVersions = {
+  BLJS10250: boolean,
+  NPJB00512: boolean
+}
 
 const Games = () => {
   const {t} = useTranslation();
   const rpcs3Path = useConfigStore((state) => state.rpcs3Path);
   const navigate = useNavigate();
-  const [metadata, setMetadata] = useState<Metadata>()
-  const [mirrors, setMirrors] = useState<Mirrors>()
-  const [gameVersions, setGameVersions] = useState<GameVersions | undefined>();
+  const { loadedMetadata, setLoadedMetadata } = useAppStore(
+    (state) => ({
+      loadedMetadata: state.loadedMetadata,
+      setLoadedMetadata: state.setLoadedMetadata,
+    }),
+    shallow
+  );
+  const [gameVersions, setGameVersions] = useState<DetectedGameVersions | undefined>();
 
-  const checkRpcs3Validity = async () => {
-    const isValidRpcs3: boolean = await CheckRpcs3Validity(rpcs3Path)
+  const checkRpcs3 = async () => {
+    const isValidRpcs3: boolean = await checkRpcs3Validity(rpcs3Path)
     if (isValidRpcs3) {
-      const initialized = await CheckRpcs3Initialized(rpcs3Path)
+      const initialized = await checkRpcs3Initialized(rpcs3Path)
       if (!initialized) {
         navigate(INITIALIZE_ROUTE)
       } else {
-        invoke<GameVersions>("check_game_versions", {fullPath: rpcs3Path})
+        invoke<DetectedGameVersions>("check_game_versions", {fullPath: rpcs3Path})
           .then((result) => setGameVersions(result))
           .catch()
       }
@@ -45,23 +51,20 @@ const Games = () => {
   }
 
   useEffect(() => {
-    checkRpcs3Validity().catch(err => console.error(err))
+    checkRpcs3().catch(err => console.error(err))
   }, []);
 
   useEffect(() => {
     const getMetadata = async () => {
-      const loadedMirrors = await loadMirrors(false)
-      const loadedMetadata = await loadMetadata(false)
-
-      setMetadata(loadedMetadata)
-      setMirrors(loadedMirrors)
+      const loadedMetadata = await loadMetadata(true)
+      setLoadedMetadata(loadedMetadata)
     };
 
     if (gameVersions) {
       getMetadata().catch(console.error)
     }
   }, [gameVersions])
-
+  
   return (
     <div className={"min-h-screen flex h-screen"}>
       <div className={"m-auto w-full max-w-md space-y-6"}>
@@ -101,33 +104,33 @@ const Games = () => {
             </CardHeader>
             <CardContent>
               {
-                (!gameVersions || !metadata) ?
+                (!gameVersions || !loadedMetadata) ?
                   <div className={"flex-col space-y-3"}>
                     <Skeleton className={"h-12 w-full"}/>
                     <Skeleton className={"h-12 w-full"}/>
                   </div>
-                  : !(gameVersions.bljs || gameVersions.npjb) ?
+                  : !(gameVersions.BLJS10250 || gameVersions.NPJB00512) ?
                     <div>
                       <h1>{t("No games found!")}</h1>
                     </div>
                     : <Tabs
                         className={`min-w-[400px]`}
-                        defaultValue={`${gameVersions.bljs ? "bljs" : "npjb"}`}>
+                        defaultValue={`${gameVersions.BLJS10250 ? "bljs" : "npjb"}`}>
                         <TabsList
-                          className={`${gameVersions.bljs && gameVersions.npjb ? "grid-cols-2" : "grid-cols-1"} grid w-full`}>
-                          {gameVersions.bljs && <TabsTrigger value="bljs">BLJS10250</TabsTrigger>}
-                          {gameVersions.npjb && <TabsTrigger value="npjb">NPJB00512</TabsTrigger>}
+                          className={`${gameVersions.BLJS10250 && gameVersions.NPJB00512 ? "grid-cols-2" : "grid-cols-1"} grid w-full`}>
+                          {gameVersions.BLJS10250 && <TabsTrigger value="bljs">BLJS10250</TabsTrigger>}
+                          {gameVersions.NPJB00512 && <TabsTrigger value="npjb">NPJB00512</TabsTrigger>}
                         </TabsList>
                         {
-                          gameVersions.bljs &&
+                          gameVersions.BLJS10250 &&
                             <TabsContent value="bljs">
-                                <GameTabs gameId={"BLJS10250"} metadata={metadata}/>
+                                <GameTabs gameId={"BLJS10250"} metadata={loadedMetadata} />
                             </TabsContent>
                         }
                         {
-                          gameVersions.npjb &&
+                          gameVersions.NPJB00512 &&
                             <TabsContent value="npjb">
-                                <GameTabs gameId={"NPJB00512"} metadata={metadata}/>
+                                <GameTabs gameId={"NPJB00512"} metadata={loadedMetadata} />
                             </TabsContent>
                         }
                     </Tabs>

@@ -88,4 +88,3 @@ pub async fn check_rpcs3_running() -> Result<bool, ()> {
     }
     Ok(false)
 }
-

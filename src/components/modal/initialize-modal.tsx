@@ -10,19 +10,25 @@ import {
 } from "@/components/ui/alert-dialog.tsx";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "@/lib/store/app.ts";
+import {useConfigStore} from "@/lib/store/config.ts";
+import {toast} from "sonner";
+import i18n from "i18next";
+import {invoke} from "@tauri-apps/api/core";
 
 function InitializeModal() {
   const {t} = useTranslation();
   const {openInitializeModal, setOpenInitializeModal, setIsInitializing} = useAppStore()
-
+  const {rpcs3Path} = useConfigStore()
+  
   const initializeCache = async () => {
     setIsInitializing(true)
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    toast.info(i18n.t("Starting initialization process..."));
 
-    // await invoke("initialize", {
-    //   rpcs3Executable: rpcs3Path
-    // })
+    await invoke("initialize", {
+      rpcs3Executable: rpcs3Path
+    })
 
+    toast.success(i18n.t("Initialization process complete!"));
     setIsInitializing(false)
   }
 
@@ -46,8 +52,10 @@ function InitializeModal() {
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => {
             setOpenInitializeModal(false)
-          }}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={initializeCache}>{t("Initialize")}</AlertDialogAction>
+          }}>{t("Cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={ async () => {
+            await initializeCache()
+          }}>{t("Initialize")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

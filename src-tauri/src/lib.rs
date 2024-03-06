@@ -1,6 +1,6 @@
 use tauri::Manager;
 
-use crate::commands::{get_file_metadata_command, get_file_modified_epoch_command, rclone_command};
+use crate::commands::{get_file_metadata_command, get_file_modified_epoch_command, rclone_command, pack_psarc_command};
 use crate::downloader::custom_downloader;
 use crate::file_check::{check_game_versions, check_directory_exist};
 use crate::file_handler::get_file_system_entries;
@@ -31,6 +31,9 @@ pub fn run() {
         .setup(|app| {
             let window = app.get_window("main").unwrap();
             
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
+            
             // #[cfg(target_os = "macos")]
             // apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
             //     .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
@@ -60,7 +63,8 @@ pub fn run() {
             check_rpcs3_running,
             validate_rpcs3_executable,
             initialize,
-            check_initialized
+            check_initialized,
+            pack_psarc_command
         ])
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_store::Builder::default().build())

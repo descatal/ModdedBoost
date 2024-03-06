@@ -43,32 +43,31 @@ pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
 
 #[tauri::command]
 pub async fn launch_game(full_path: &str, game_type: &str) -> Result<(), ()> {
-    match get_rpcs3_os(full_path) {
-        Ok(OS::Windows) => {
-            let _game_output = Command::new(full_path)
-                .arg("--no-gui")
-                .arg(format!("%RPCS3_GAMEID%:{}", game_type))
-                .output()
-                .await
-                .unwrap_or_else(|_| panic!("Failed to launch game!"));
-        },
-        Ok(OS::Linux) => {
-            let _chmod_output = Command::new("chmod")
-                .arg("+x")
-                .arg(full_path)
-                .output()
-                .await
-                .unwrap_or_else(|_| panic!("Failed to turn AppImage into executable!"));
+    if let Ok(OS::Windows) = get_rpcs3_os(full_path) {
+        let _game_output = Command::new(full_path)
+            .arg("--no-gui")
+            .arg(format!("%RPCS3_GAMEID%:{}", game_type))
+            .output()
+            .await
+            .unwrap_or_else(|_| panic!("Failed to launch game!"));
+    } else if let Ok(OS::Linux) = get_rpcs3_os(full_path) {
+        let _chmod_output = Command::new("chmod")
+            .arg("+x")
+            .arg(full_path)
+            .output()
+            .await
+            .unwrap_or_else(|_| panic!("Failed to turn AppImage into executable!"));
 
-            let _game_output = Command::new(full_path)
-                .arg("--no-gui")
-                .arg(format!("%RPCS3_GAMEID%:{}", game_type))
-                .output()
-                .await
-                .unwrap_or_else(|_| panic!("Failed to launch game!"));
-        }
-        Ok(OS::Macos) => println!("macOS is not supported"),
-        Err(()) => println!("Unsupported OS type"),
+        let _game_output = Command::new(full_path)
+            .arg("--no-gui")
+            .arg(format!("%RPCS3_GAMEID%:{}", game_type))
+            .output()
+            .await
+            .unwrap_or_else(|_| panic!("Failed to launch game!"));
+    } else if let Ok(OS::Macos) = get_rpcs3_os(full_path) {
+        println!("macOS is not supported")
+    } else {
+        println!("Unsupported OS type")
     }
     
     Ok(())

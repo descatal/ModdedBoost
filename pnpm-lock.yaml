@@ -56,10 +56,16 @@ dependencies:
   '@tauri-apps/plugin-fs':
     specifier: 2.0.0-beta.1
     version: 2.0.0-beta.1
+  '@tauri-apps/plugin-process':
+    specifier: 2.0.0-beta.1
+    version: 2.0.0-beta.1
   '@tauri-apps/plugin-shell':
     specifier: ^2.0.0-beta.0
     version: 2.0.0-beta.1
   '@tauri-apps/plugin-store':
+    specifier: 2.0.0-beta.1
+    version: 2.0.0-beta.1
+  '@tauri-apps/plugin-updater':
     specifier: 2.0.0-beta.1
     version: 2.0.0-beta.1
   '@tauri-apps/plugin-upload':
@@ -89,6 +95,9 @@ dependencies:
   lodash.debounce:
     specifier: ^4.0.8
     version: 4.0.8
+  lodash.isequal:
+    specifier: ^4.5.0
+    version: 4.5.0
   lucide-react:
     specifier: ^0.303.0
     version: 0.303.0(react@18.2.0)
@@ -1891,6 +1900,12 @@ packages:
       '@tauri-apps/api': 2.0.0-beta.2
     dev: false
 
+  /@tauri-apps/plugin-process@2.0.0-beta.1:
+    resolution: {integrity: sha512-rrKHWQ6zWeC7uTXXcSIcTvWCPcX/oPC2KzR4s6PAbzOkPFusRDWVgWvpfp5byN1KQ3znYkS7x0BOhWsPNbfeMw==}
+    dependencies:
+      '@tauri-apps/api': 2.0.0-beta.2
+    dev: false
+
   /@tauri-apps/plugin-shell@2.0.0-beta.1:
     resolution: {integrity: sha512-yMf9CMHCRkGnx0pv420MptEeUdk+bVrXyM5zwFisy75GBhXgvEEtSjAkubTsC0jkzLfn4EInizaW2GER9ub7cQ==}
     dependencies:
@@ -1899,6 +1914,12 @@ packages:
 
   /@tauri-apps/plugin-store@2.0.0-beta.1:
     resolution: {integrity: sha512-yTGZl7YWcXJFZcTthWMvD8U6eZ8phZ76L6J1GqF8rvEWGEp7iqEthmdg2UNFr7J2XDxmfYArYb72uKs979TuAA==}
+    dependencies:
+      '@tauri-apps/api': 2.0.0-beta.2
+    dev: false
+
+  /@tauri-apps/plugin-updater@2.0.0-beta.1:
+    resolution: {integrity: sha512-Pfb0mtzG72EPH5xR4WZGVRXyFz521uDb0a451inSKnb0ELcRlfKukRzLZEfuCtxgUAUw8cVX6sn16OduE4AkDg==}
     dependencies:
       '@tauri-apps/api': 2.0.0-beta.2
     dev: false
@@ -3230,6 +3251,10 @@ packages:
 
   /lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
+    dev: false
+
+  /lodash.isequal@4.5.0:
+    resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
     dev: false
 
   /lodash.merge@4.6.2:

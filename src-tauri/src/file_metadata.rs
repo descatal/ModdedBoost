@@ -36,23 +36,33 @@ pub async fn get_cached_metadata(
     
     let mut result: Vec<FileMetadata> = Vec::new();
     for file_path in file_paths {
-        let last_modified = get_file_modified_epoch(&file_path).await.unwrap();
+        let path: &Path = Path::new(&file_path);
+        if !path.exists() {
+            continue;
+        }
+        
+        let file_last_modified = get_file_modified_epoch(&file_path).await.unwrap();
         let mut into_iter = file_metadata_cache.clone().into_iter();
         match into_iter.find(|file_metadata| file_metadata.path == *file_path) {
             Some(mut file) => {
-                if file.last_modified != last_modified {
-                    file.checksum = get_checksum(file_path).await;
-                    file.last_modified = last_modified.clone();
+                let cache_last_modified = file.last_modified;
+                if cache_last_modified < file_last_modified {
+                    file.checksum = get_checksum(&file_path).await;
+                    file.last_modified = file_last_modified.clone();
+                    // Update the item in the cache
+                    if let Some(index) = file_metadata_cache.iter().position(|item| item.path == *file_path) {
+                        file_metadata_cache[index] = file.clone();
+                    }
                 }
                 result.push(file.clone());
             }
             None => {
                 let path = file_path.clone();
-                let checksum = get_checksum(file_path).await;
+                let checksum = get_checksum(&file_path).await;
                 let file_metadata = FileMetadata {
                     path,
                     checksum,
-                    last_modified,
+                    last_modified: file_last_modified,
                 };
                 file_metadata_cache.push(file_metadata.clone());
                 result.push(file_metadata);
@@ -84,7 +94,7 @@ pub async fn get_file_modified_epoch(
     }
 }
 
-async fn get_checksum(file_path: String) -> String {
+async fn get_checksum(file_path: &str) -> String {
     let path: &Path = Path::new(&file_path);
     if !path.exists() {
         panic!("File not found!");

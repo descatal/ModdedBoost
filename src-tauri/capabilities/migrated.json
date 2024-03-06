@@ -19,11 +19,15 @@
     "resources:default",
     "menu:default",
     "tray:default",
+    "updater:default",
+    "updater:allow-check",
+    "updater:allow-download-and-install",
     "store:allow-get",
     "store:allow-set",
     "store:allow-clear",
     "store:allow-save",
     "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
     {
       "identifier": "fs:scope",
       "allow": [{ "path": "$RESOURCE" }, { "path": "$RESOURCE/**" }]
