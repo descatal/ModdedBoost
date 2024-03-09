@@ -1,11 +1,12 @@
 import {Button} from '../../ui/button.tsx';
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 import {useTranslation} from "react-i18next";
 import FilesTableRow from "@/components/dialogs/files/files-table-row.tsx";
-import {UpdateIcon} from "@radix-ui/react-icons";
+import {ChevronDownIcon, UpdateIcon} from "@radix-ui/react-icons";
 import {
-  Drawer, DrawerClose,
+  Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -16,10 +17,14 @@ import {
 import IconButton from "@/components/common/icon-button.tsx";
 import {loadMetadata, ModFiles} from "@/lib/metadata.ts";
 import {MirrorGroupToggle} from "@/components/common/title-bar/mirror-group-toggle.tsx";
-import {invoke} from "@tauri-apps/api/core";
-import {LocalFileMetadata, useAppStore} from "@/lib/store/app.ts";
+import {useAppStore} from "@/lib/store/app.ts";
 import {toast} from "sonner";
 import i18n from "i18next";
+import {refreshAllLocalMetadata} from "@/lib/update.ts";
+import {Separator} from "@/components/ui/separator.tsx";
+import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger} from "@/components/ui/dropdown-menu.tsx";
+import {LuRefreshCcwDot} from "react-icons/lu";
+import {invoke} from "@tauri-apps/api/core";
 
 interface FileDialogsProps {
   gameId: string;
@@ -31,32 +36,28 @@ interface FileDialogsProps {
 const FilesDialog = ({gameId, modVersion, files, triggerContent}: FileDialogsProps) => {
   const {t} = useTranslation();
   const [isCheckingUpdates, setIsCheckingUpdates] = useState(false)
-  const {localMetadata, setLocalMetadata, setLoadedMetadata, isRefreshing, setIsRefreshing} = useAppStore()
+  const [isRemovingCache, setIsRemovingCache] = useState(false)
+  const { isRefreshing, localMetadata, setLoadedMetadata} = useAppStore()
   
   const checkUpdates = async () => {
     setIsCheckingUpdates(true)
-    toast.info(i18n.t("Fetching updates from remote..."));
-    const loadedMetadata = await loadMetadata(true)
-    setLoadedMetadata(loadedMetadata)
+    const loadingToastId = toast.loading(i18n.t("Fetching updates from remote..."));
+    setLoadedMetadata(await loadMetadata(true))
+    toast.dismiss(loadingToastId)
     toast.success(i18n.t("Fetch complete."));
     setIsCheckingUpdates(false)
   }
-
-  const getFileMetadata = async (showToast: boolean) => {
-    setIsRefreshing(true)
-    if (showToast) toast.info(i18n.t("Refreshing local files..."));
-    const actualFilePaths = files.map((item) => item.path)
-    const realFileMetadata = await invoke<LocalFileMetadata[]>("get_file_metadata_command", {
-      filePaths: actualFilePaths
-    })
-    setLocalMetadata(realFileMetadata)
-    if (showToast) toast.success(i18n.t("Refresh complete."));
-    setIsRefreshing(false)
+  
+  const refresh = async (showToast: boolean) => {
+    const filePaths = files.map(item=> item.path);
+    await refreshAllLocalMetadata(filePaths, showToast)
   }
   
-  useEffect(() => {
-    getFileMetadata(false).catch(console.error)
-  }, [files])
+  const removeMetadataCache = async () => {
+    setIsRemovingCache(true)
+    await invoke("clear_cached_metadata_command");
+    setIsRemovingCache(false)
+  }
   
   return (
     <Drawer>
@@ -79,17 +80,48 @@ const FilesDialog = ({gameId, modVersion, files, triggerContent}: FileDialogsPro
               buttonDescription={t("Check for updates")}
               tooltipContent={t("Fetch data from remote")}
               buttonIcon={<UpdateIcon/>}
-              onClick={ async () => {
+              onClick={async () => {
                 await checkUpdates()
               }}/>
-            <IconButton
-              isLoading={isRefreshing}
-              buttonDescription={t("Refresh")}
-              tooltipContent={t("Re-check local file status")}
-              buttonIcon={<UpdateIcon/>}
-              onClick={ async () => {
-                await getFileMetadata(true)
-              }}/>
+            <div className="flex items-center space-x-1 rounded-md">
+              <IconButton
+                isLoading={isRefreshing}
+                buttonDescription={t("Refresh")}
+                tooltipContent={t("Re-check local file status")}
+                buttonVariant={"outline"}
+                buttonIcon={<UpdateIcon/>}
+                onClick={async () => {
+                  await refresh(true)
+                }}/>
+              <Separator orientation="vertical" className="h-[20px]" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="px-2">
+                    <ChevronDownIcon className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  alignOffset={-5}
+                  className="max-w-sm"
+                  forceMount
+                >
+                  <IconButton
+                    isLoading={isRemovingCache}
+                    isDisabled={isRefreshing}
+                    buttonClassName="w-full"
+                    tooltipContent={t("Force launcher to redo all checksum calculations on refresh.")}
+                    buttonVariant={"ghost"}
+                    buttonDescription={t("Clear Refresh Cache")}
+                    buttonIcon={<LuRefreshCcwDot/>}
+                    onClick={ async () => {
+                      await removeMetadataCache()
+                      await refresh(true)
+                    }}
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </DrawerHeader>
         <div className={"h-[100%] relative overflow-auto"}>
@@ -107,7 +139,7 @@ const FilesDialog = ({gameId, modVersion, files, triggerContent}: FileDialogsPro
               {files ? files.map(item => {
                 return <FilesTableRow
                   key={item.path}
-                  readFileMetadata={localMetadata.find(actual => actual.path === item.path)}
+                  localFileMetadata={localMetadata.find(actual => actual.path === item.path)}
                   file={item}/>
                 }) : <></>
               }
@@ -115,7 +147,7 @@ const FilesDialog = ({gameId, modVersion, files, triggerContent}: FileDialogsPro
           </Table>
         </div>
         <DrawerFooter>
-          <DrawerClose>
+          <DrawerClose asChild>
             <Button className={"w-full"}>{t("Close")}</Button>
           </DrawerClose>
         </DrawerFooter>

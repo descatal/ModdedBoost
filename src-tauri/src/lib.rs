@@ -1,6 +1,6 @@
 use tauri::Manager;
 
-use crate::commands::{get_file_metadata_command, get_file_modified_epoch_command, rclone_command, pack_psarc_command};
+use crate::commands::{get_file_metadata_command, clear_cached_metadata_command, get_file_modified_epoch_command, rclone_command, pack_psarc_command};
 use crate::downloader::custom_downloader;
 use crate::file_check::{check_game_versions, check_directory_exist};
 use crate::file_handler::get_file_system_entries;
@@ -58,6 +58,7 @@ pub fn run() {
             update_tauri,
             get_file_metadata_command,
             get_file_modified_epoch_command,
+            clear_cached_metadata_command,
             custom_downloader,
             rclone_command,
             check_rpcs3_running,

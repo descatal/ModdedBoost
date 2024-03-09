@@ -26,7 +26,7 @@ const Games = () => {
   const rpcs3Path = useConfigStore((state) => state.rpcs3Path);
   const navigate = useNavigate();
   const { loadedMetadata, setLoadedMetadata } = useAppStore(
-    (state) => ({
+(state) => ({
       loadedMetadata: state.loadedMetadata,
       setLoadedMetadata: state.setLoadedMetadata,
     }),
@@ -42,7 +42,9 @@ const Games = () => {
         navigate(INITIALIZE_ROUTE)
       } else {
         invoke<DetectedGameVersions>("check_game_versions", {fullPath: rpcs3Path})
-          .then((result) => setGameVersions(result))
+          .then((result) => {
+            setGameVersions(result)
+          })
           .catch()
       }
     } else {
@@ -56,13 +58,19 @@ const Games = () => {
 
   useEffect(() => {
     const getMetadata = async () => {
-      const loadedMetadata = await loadMetadata(true)
-      setLoadedMetadata(loadedMetadata)
+      const metadata = await loadMetadata(true)
+      setLoadedMetadata(metadata)
     };
 
+    const timedRefresh = setInterval(async () => {
+      //await getMetadata();
+    }, 300000); // redo metadata refresh every 5 minutes
+    
     if (gameVersions) {
       getMetadata().catch(console.error)
     }
+
+    return () => clearInterval(timedRefresh);
   }, [gameVersions])
   
   return (

@@ -1,3 +1,4 @@
+use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -15,10 +16,25 @@ pub struct FileMetadata {
     last_modified: u64,
 }
 
+pub async fn clear_cached_metadata(
+    app: &AppHandle,
+) -> Result<(), ()> {
+    let mut config_dir = app.path().app_config_dir().unwrap_or(std::path::PathBuf::new());
+    config_dir.push(".metadata_cache.dat");
+    
+    if Path::exists(&config_dir) {
+        fs::remove_file(&config_dir).expect("file deletion failed");
+    } 
+    
+    Ok(())
+}
+
 pub async fn get_cached_metadata(
     app: &AppHandle,
     file_paths: Vec<String>,
 ) -> Result<(Vec<FileMetadata>), ()> {
+    println!("Getting cached local file metadata");
+
     let mut config_dir = app.path().app_config_dir().unwrap_or(std::path::PathBuf::new());
     config_dir.push(".metadata_cache.dat");
 

@@ -17,6 +17,7 @@ import {useSessionStorage} from "@/lib/store/session-storage.ts";
 import {toast} from "sonner";
 import i18n from "i18next";
 import {useAppStore} from "@/lib/store/app.ts";
+import {refreshAllLocalMetadata} from "@/lib/update.ts";
 
 type ConfigProps = {
   gameId: GameVersions,
@@ -47,7 +48,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   const {t} = useTranslation();
   const {processes, addOrUpdateProcess} = useProcessListStore();
   const {rpcs3Path, mirrorGroup} = useConfigStore.getState()
-  const {setOpenRunningProcessModal} = useAppStore()
+  const {isModFilesOutdated, localMetadata, setIsModFilesOutdated, setOpenRunningProcessModal} = useAppStore()
   const {baseFolderLastChecked, setBaseFolderLastChecked} = useSessionStorage();
   const [baseFolderSyncProcess, setBaseFolderSyncProcess] = useState(defaultBaseFolderSyncProcess)
   const [baseFolderCheckProcess, setBaseFolderCheckProcess] = useState(defaultBaseFolderCheckProcess)
@@ -57,77 +58,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   const [isLaunchingGame, setIsLaunchingGame] = useState(false)
   // Make a clone of the object as different game versions should have their own copy of their metadata.
   const [gameMetadata, setGameMetadata] = useState(cloneDeep(metadata))
-
-  useEffect(() => {
-    const convertPaths = async () => {
-      const rpcs3Directory = await dirname(rpcs3Path)
-      transformPaths(rpcs3Directory, metadata, gameId).then(result => {
-        result.mod.files = result.mod.files.filter(map => map.versions.includes(gameId))
-        setGameMetadata(result)
-      });
-    }
-    convertPaths().catch(console.error)
-  }, [metadata])
-
-  useEffect(() => {
-    const lastCheckedTime = baseFolderLastChecked.find(item => item.gameId === gameId)
-    const currentTime = new Date().getTime();
-    const thresholdMs = 60 * 60 * 1000;
-    if (!lastCheckedTime || (currentTime - lastCheckedTime.timestamp) > thresholdMs) {
-      // Only execute check if the last check is 1 hour or more
-      checkBaseFolder().catch(err => console.error(err));
-    }
-    
-    // let hasError = false;
-    // const listenBaseFolderCheck = listen<string>(
-    //   "rclone_check_base_folder",
-    //   async (event) => {
-    //     const lowerCasePayload = event.payload.toLocaleLowerCase();
-    //     if (lowerCasePayload.includes("start")) {
-    //       console.log("check start", mirrorGroup)
-    //       hasError = false;
-    //     } else if (lowerCasePayload.includes("end")) {
-    //       console.log("check end")
-    //       setIsCheckingBaseFolder(false)
-    //      
-    //       // hasError = needs to redo sync
-    //       if (hasError) {
-    //         setIsBaseFolderOutdated(hasError)
-    //        
-    //         // Also reset the last checked time to zero so if user refresh the page it'll do the check
-    //         await setBaseFolderLastChecked(0)
-    //       } else {
-    //         await setBaseFolderLastChecked(Date.now())
-    //       }
-    //     } else if (lowerCasePayload.includes("errors:")) {
-    //       hasError = true;
-    //     }
-    //   }
-    // )
-    //
-    // const listenBaseFolderSync = listen<string>(
-    //   "rclone_sync_base_folder",
-    //   async (event) => {
-    //     const lowerCasePayload = event.payload.toLocaleLowerCase();
-    //     if (lowerCasePayload.includes("end")) {
-    //       console.log("check end")
-    //       setIsSyncingBaseFolder(false)
-    //      
-    //       // Once the sync is done, redo the check while assuming optimistic result
-    //       setIsBaseFolderOutdated(false)
-    //       await checkBaseFolder();
-    //     } else if (lowerCasePayload.includes("start")) {
-    //       console.log("check start", mirrorGroup)
-    //     }
-    //   }
-    // )
-
-    return () => {
-      // listenBaseFolderCheck.then(f => f());
-      // listenBaseFolderSync.then(f => f());
-    };
-  }, []);
-
+  
   const launchGame = async (rpcs3Path: String, gameId: "BLJS10250" | "NPJB00512") => {
     const isRpcs3Running = await invoke("check_rpcs3_running")
     if (isRpcs3Running) {
@@ -158,8 +89,8 @@ function GameTabs({gameId, metadata}: ConfigProps) {
     }
 
     for (const item of mirrorGroup.remotes) {
+      const loadingToastId = toast.loading(i18n.t("Validating base folder..."));
       try {
-        toast.info(i18n.t("Validating base folder..."));
         await addOrUpdateProcess({...baseFolderCheckProcess, status: "Started"})
         const commandResult = await runCommand(item.rcloneName)
         if (commandResult) {
@@ -170,6 +101,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
       } catch (e) {
         console.error(e);
       } finally {
+        toast.dismiss(loadingToastId)
         toast.success(i18n.t("Base folder validation complete."));
         await addOrUpdateProcess({...baseFolderCheckProcess, status: "Finished"})
       }
@@ -192,8 +124,8 @@ function GameTabs({gameId, metadata}: ConfigProps) {
     }
 
     for (const item of mirrorGroup.remotes) {
+      const loadingToastId = toast.loading(i18n.t("Starting base folder sync..."));
       try {
-        toast.info(i18n.t("Starting base folder sync..."));
         await addOrUpdateProcess({...baseFolderSyncProcess, status: "Started"})
         const commandResult = await runCommand(item.rcloneName)
         if (commandResult) await setBaseFolderLastChecked(gameId, new Date().getTime())
@@ -202,11 +134,49 @@ function GameTabs({gameId, metadata}: ConfigProps) {
       } catch (e) {
         console.error(e);
       } finally {
+        toast.dismiss(loadingToastId)
         toast.success(i18n.t("Base folder sync complete."));
         await addOrUpdateProcess({...baseFolderSyncProcess, status: "Finished"})
       }
     }
   };
+
+  useEffect(() => {
+    const convertPaths = async () => {
+      const rpcs3Directory = await dirname(rpcs3Path)
+      const result = await transformPaths(rpcs3Directory, metadata, gameId);
+      result.mod.files = result.mod.files.filter(map => map.versions.includes(gameId))
+      setGameMetadata(result)
+
+      const filePaths = result.mod.files.map(item=> item.path);
+      await refreshAllLocalMetadata(filePaths, false)
+    }
+    convertPaths().catch(console.error)
+  }, [metadata])
+  
+  useEffect(() => {
+    const checkOutdated = async () => {
+      const allRemoteChecksum = gameMetadata.mod.files.map(item => item.md5).sort()
+      const allLocalFilesChecksum = localMetadata.map(item => item.checksum).sort()
+      const isInSync = (
+        allRemoteChecksum.length === allLocalFilesChecksum.length
+        && allRemoteChecksum.every((value, index) => value === allLocalFilesChecksum[index])
+      )
+      setIsModFilesOutdated(!isInSync)
+    }
+
+    checkOutdated().catch(console.error)
+  }, [localMetadata])
+
+  useEffect(() => {
+    const lastCheckedTime = baseFolderLastChecked.find(item => item.gameId === gameId)
+    const currentTime = new Date().getTime();
+    const thresholdMs = 60 * 60 * 1000;
+    if (!lastCheckedTime || (currentTime - lastCheckedTime.timestamp) > thresholdMs) {
+      // Only execute check if the last check is 1 hour or more
+      checkBaseFolder().catch(err => console.error(err));
+    }
+  }, []);
 
   useEffect(() => {
     const newBaseFolderCheckProcess = processes.find(process => process.id === baseFolderCheckProcessId)
@@ -265,7 +235,11 @@ function GameTabs({gameId, metadata}: ConfigProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Label className="text-sm font-medium">{`${t("Mod Files")}`}</Label>
-              {/*<Badge>{`${metadata.mod.modVersion}`}</Badge>*/}
+              {
+                !isModFilesOutdated 
+                  ? <Badge className={"bg-green-500"}>{t("In Sync")}</Badge>
+                  : <Badge variant={"destructive"}>{t("Out of Sync")}</Badge>
+              }
             </div>
             <div className="flex items-center space-x-2">
               {

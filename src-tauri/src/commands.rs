@@ -1,6 +1,6 @@
 use tauri::AppHandle;
 
-use crate::file_metadata::{FileMetadata, get_cached_metadata, get_file_modified_epoch};
+use crate::file_metadata::{clear_cached_metadata, FileMetadata, get_cached_metadata, get_file_modified_epoch};
 use crate::psarc::pack_psarc;
 use crate::rclone::rclone;
 
@@ -26,6 +26,12 @@ pub async fn get_file_metadata_command(
     get_cached_metadata(&app, file_paths).await
 }
 
+#[tauri::command]
+pub async fn clear_cached_metadata_command(
+    app: AppHandle,
+) -> Result<(), ()> {
+    clear_cached_metadata(&app).await
+}
 
 #[tauri::command]
 pub async fn get_file_modified_epoch_command(

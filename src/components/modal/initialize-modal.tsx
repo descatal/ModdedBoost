@@ -22,12 +22,13 @@ function InitializeModal() {
   
   const initializeCache = async () => {
     setIsInitializing(true)
-    toast.info(i18n.t("Starting initialization process..."));
+    const loadingToastId = toast.loading(i18n.t("Starting initialization process..."));
 
     await invoke("initialize", {
       rpcs3Executable: rpcs3Path
     })
 
+    toast.dismiss(loadingToastId)
     toast.success(i18n.t("Initialization process complete!"));
     setIsInitializing(false)
   }
@@ -39,7 +40,7 @@ function InitializeModal() {
           <AlertDialogTitle>{t("Initialize cache folder?")}</AlertDialogTitle>
           <AlertDialogDescription>
             <li>
-              {t("The initialization process involves extracting existing patch files to the update cache repository. ")}
+              {t("The initialization process involves extracting existing patch files to the update cache repository.")}
             </li>
             <li>
               {t("This step is required for new rpcs3 directories.")}

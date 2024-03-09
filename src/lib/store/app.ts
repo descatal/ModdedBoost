@@ -25,6 +25,12 @@ export interface AppProps {
   openUpdateModal: boolean;
   updateInfo: Update | null;
   setOpenUpdateModal: (update: Update | null) => void;
+
+  openInvalidPathModal: boolean;
+  setOpenInvalidPathModal: (open: boolean) => void;
+
+  isModFilesOutdated: boolean;
+  setIsModFilesOutdated: (open: boolean) => void;
   
   loadedMetadata: Metadata | undefined,
   setLoadedMetadata: (metadata: Metadata) => void;
@@ -64,6 +70,16 @@ export const useAppStore = createWithEqualityFn<AppProps>()((set) => ({
   updateInfo: null,
   setOpenUpdateModal(update: Update | null) {
     set({openUpdateModal: update?.available ?? false, updateInfo: update})
+  },
+
+  openInvalidPathModal: false,
+  setOpenInvalidPathModal(open) {
+    set({openInvalidPathModal: open})
+  },
+
+  isModFilesOutdated: false,
+  setIsModFilesOutdated(isOutdated) {
+    set({isModFilesOutdated: isOutdated})
   },
   
   loadedMetadata: undefined,

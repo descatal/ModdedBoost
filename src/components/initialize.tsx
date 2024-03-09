@@ -55,18 +55,22 @@ export default function Initialize() {
   };
 
   const processDirectory = async (showToast: boolean, path: string) => {
-    if (showToast) toast.info(i18n.t("Rpcs3 path changed, processing directory..."));
-
+    let loadingToastId : string | number | undefined = undefined;
+    if (showToast) {
+      loadingToastId = toast.loading(i18n.t("Rpcs3 path changed, processing directory..."));
+    }
     setIsChecking(true)
     const isValidRpcs3: boolean = await checkRpcs3Validity(path)
     setIsValid(isValidRpcs3)
     
     if (isValidRpcs3) {
+      if (loadingToastId) toast.dismiss(loadingToastId)
       if (showToast) toast.success(i18n.t("Valid executable found!"));
       
       const isInitialized: boolean = await checkRpcs3Initialized(path)
       setInitialized(isInitialized)
     } else {
+      if (loadingToastId) toast.dismiss(loadingToastId)
       if (showToast) toast.error(i18n.t("The specified file path is not a valid rpcs3 executable!"));
     }
     setIsChecking(false)

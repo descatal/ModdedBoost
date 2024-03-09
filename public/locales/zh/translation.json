@@ -72,6 +72,12 @@
   "Latest": "最新",
   "Outdated": "过时",
   "No updates found!": "暂无更新!",
-  "Update available!": "更新",
-  "A new version of launcher is available.": "检测到新版启动器"
+  "New Update Available!": "新版启动器",
+  "A new version of launcher is available!": "检测到新版启动器",
+  "Please click on the Update button to begin the update process.": "请按下更新按钮开始更新",
+  "Path not supported": "路径错误",
+  "Path containing Chinese / Japanese characters are not supported!": "RPCS3 路径不可以含有中文 / 日文字母！请更改后重试。",
+  "Not Found": "未找到文件",
+  "Clear Refresh Cache": "清除刷新缓存",
+  "Force launcher to redo all checksum calculations on refresh.": "强制启动器在刷新时重做所有校验和计算"
 }

@@ -20,7 +20,7 @@ export default function App() {
             <TooltipProvider>
               <Modals/>
               <RouterProvider router={Router()}/>
-              <Toaster/>
+              <Toaster position={"top-center"}/>
             </TooltipProvider>
           </ThemeProvider>
         </React.Suspense>

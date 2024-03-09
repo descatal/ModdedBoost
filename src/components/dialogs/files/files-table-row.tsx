@@ -15,10 +15,10 @@ import i18n from "i18next";
 
 interface FilesTableRowProps {
   file: ModFiles
-  readFileMetadata: LocalFileMetadata | undefined
+  localFileMetadata: LocalFileMetadata | undefined
 }
 
-const FilesTableRow = ({file, readFileMetadata}: FilesTableRowProps) => {
+const FilesTableRow = ({file, localFileMetadata}: FilesTableRowProps) => {
   const fileProcessId = `FileProcess_${file.name}`;
   const defaultFileProcess: ProcessProps = {
     id: fileProcessId,
@@ -34,7 +34,11 @@ const FilesTableRow = ({file, readFileMetadata}: FilesTableRowProps) => {
   const {isRefreshing} = useAppStore();
   const [fileProcess, setFileProcess] = useState(defaultFileProcess)
   const [isSyncingFileProcess, setIsSyncingFileProcess] = useState(false)
-  const isOutdated = file.md5 === readFileMetadata?.checksum
+  const [isLatest, setIsLatest] = useState(false)
+
+  useEffect(() => {
+    setIsLatest(file.md5 === localFileMetadata?.checksum)
+  }, [file, localFileMetadata])
   
   useEffect(() => {
     const newFileProcess = processes.find(process => process.id === fileProcessId)
@@ -55,27 +59,28 @@ const FilesTableRow = ({file, readFileMetadata}: FilesTableRowProps) => {
       </TableCell>
       <TableCell>
         <div className="flex gap-2 justify-center">
-          {readFileMetadata ? readFileMetadata.checksum : "Not Found"}
+          {localFileMetadata ? localFileMetadata.checksum : t("Not Found")}
         </div>
       </TableCell>
       <TableCell>
         <div className="flex gap-2 justify-center">
-          <Badge className={`${isOutdated ? "bg-green-500" : ""} w-[50%] justify-center`}
-                 variant={isOutdated ? "default" : "destructive"}>
-            {isOutdated ? t("Latest") : t("Outdated")}
+          <Badge className={`${isLatest ? "bg-green-500" : ""} w-[50%] justify-center`}
+                 variant={isLatest ? "default" : "destructive"}>
+            {isLatest ? t("Latest") : t("Outdated")}
           </Badge>
         </div>
       </TableCell>
       <TableCell className={"text-center"}> {
-        !isOutdated ?
+        !isLatest ?
           <IconButton
             isLoading={isSyncingFileProcess || isRefreshing}
             buttonDescription={t("Update")}
             tooltipContent={t("Update to the latest version")}
             buttonIcon={<DownloadIcon/>}
             onClick={ async () => {
-              toast.info(i18n.t("Updating, this might take a while..."));
+              const loadingToastId = toast.loading(i18n.t("Updating, this might take a while..."));
               await updateFiles(fileProcess, file)
+              toast.dismiss(loadingToastId)
               toast.info(i18n.t("Update complete!"));
             }}/>
           : "-"

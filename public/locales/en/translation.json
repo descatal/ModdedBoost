@@ -72,6 +72,12 @@
   "Latest": "Latest",
   "Outdated": "Outdated",
   "No updates found!": "No updates found!",
-  "Update available!": "Update available!",
-  "A new version of launcher is available.": "A new version of launcher is available."
+  "New Update Available!": "New Update Available!",
+  "A new version of launcher is available!": "A new version of launcher is available.",
+  "Please click on the Update button to begin the update process.": "Please click on the Update button to begin the update process.",
+  "Path not supported": "Path not supported",
+  "Path containing Chinese / Japanese characters are not supported!": "Path containing Chinese / Japanese characters are not supported!",
+  "Not Found": "Not Found",
+  "Clear Refresh Cache": "Clear Refresh Cache",
+  "Force launcher to redo all checksum calculations on refresh.": "Force launcher to redo all checksum calculations on refresh."
 }

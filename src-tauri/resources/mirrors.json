@@ -13,8 +13,8 @@
       "name": "china",
       "remotes": [
         {
-          "name": "Teracloud",
-          "rcloneName": "teracloud"
+          "name": "Qiniu",
+          "rcloneName": "qiniu"
         }
       ]
     }

@@ -50,6 +50,16 @@ const TitleBar = () => {
     setIsChecking(false)
   }
   
+  useEffect(() => {
+    const timedCheck = setInterval(async () => {
+      await checkUpdate();
+    }, 3600000); // redo check every 1 hour
+    
+    checkUpdate().catch(console.error)
+    
+    return () => clearInterval(timedCheck);  
+  }, [])
+  
   return (
     <div data-tauri-drag-region
          className={"h-10 flex justify-end fixed top-2 left-2 right-2"}>

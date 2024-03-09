@@ -1,6 +1,5 @@
 import {
   AlertDialog,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -16,22 +15,20 @@ import {UpdateIcon} from "@radix-ui/react-icons";
 
 function UpdateModal() {
   const {t} = useTranslation();
-  const {openUpdateModal, updateInfo, setOpenUpdateModal} = useAppStore()
+  const {openUpdateModal, updateInfo} = useAppStore()
   const [isUpdating, setIsUpdating] = useState(false)
 
   return (
     <AlertDialog open={openUpdateModal}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t("Update available!")}</AlertDialogTitle>
+          <AlertDialogTitle>✨ {t("New Update Available!")}</AlertDialogTitle>
           <AlertDialogDescription>
-            {t("A new version of launcher is available.")}
+            🚀 {t("A new version of launcher is available!")} <br/> 
+            {t("Please click on the Update button to begin the update process.")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => {
-            setOpenUpdateModal(null)
-          }}>{t("Cancel")}</AlertDialogCancel>
           <IconButton
             isLoading={isUpdating}
             buttonVariant={"default"}
