@@ -21,12 +21,13 @@ export interface ConfigStore {
     lastModifiedEpoch: number,
     md5: string
   }[];
+  lastSelectedTab: string,
   setTheme: (theme: Theme) => Promise<void>;
   setLanguage: (language: string) => Promise<void>;
   setRpcs3Path: (rpcs3Path: string) => Promise<void>;
   setFilesMetadataCache: (fileMetadata: { path: string, lastModifiedEpoch: number, md5: string }[]) => Promise<void>;
   setMirrorGroup: (mirrorGroup: MirrorGroup) => Promise<void>;
-
+  setLastSelectedTab: (selectedTab: string) => Promise<void>;
   _hydrated: boolean;
 }
 
@@ -39,6 +40,7 @@ export const useConfigStore = createWithEqualityFn<ConfigStore>()((set) => ({
     name: "",
     remotes: []
   },
+  lastSelectedTab: "",
   setTheme: async (theme) => {
     set({theme: theme});
     localStorage.setItem(storageKey, theme);
@@ -65,6 +67,11 @@ export const useConfigStore = createWithEqualityFn<ConfigStore>()((set) => ({
     await tauriStore.set("mirror_group", mirrorGroup);
     await tauriStore.save();
   },
+  setLastSelectedTab: async (selectedTab) => {
+    set({lastSelectedTab: selectedTab});
+    await tauriStore.set("lastSelectedTab", selectedTab);
+    await tauriStore.save();
+  },
 
   _hydrated: false,
 }));
@@ -75,11 +82,13 @@ const hydrate = async () => {
   const rpcs3Path = await tauriStore.get("rpcs3_path");
   const fileMetadataPath = await tauriStore.get("file_metadata");
   const mirrorGroup = await tauriStore.get("mirror_group");
+  const lastSelectedTab = await tauriStore.get("lastSelectedTab");
 
   const parsedTheme = z.enum(["dark", "light", "system"]).safeParse(theme);
   const parsedLanguage = z.string().safeParse(language);
   const parsedRpcs3Path = z.string().safeParse(rpcs3Path);
   const parsedMirrorGroup = z.custom<MirrorGroup>().safeParse(mirrorGroup);
+  const parsedLastSelectedTab = z.string().safeParse(lastSelectedTab);
 
   const storeFileMetadataSchema = z.object({
     path: z.string(),
@@ -107,7 +116,11 @@ const hydrate = async () => {
   if (parsedMirrorGroup.success) {
     useConfigStore.setState({mirrorGroup: parsedMirrorGroup?.data ?? {name: "-", remotes: []}});
   }
-
+  
+  if (parsedLastSelectedTab.success) {
+    useConfigStore.setState({lastSelectedTab: parsedLastSelectedTab.data});
+  }
+  
   useConfigStore.setState({_hydrated: true});
 };
 

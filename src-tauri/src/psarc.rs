@@ -17,7 +17,7 @@ pub async fn unpack_psarc(
     };
     
     let booststudio_path = app.path()
-        .resolve(format!("resources/tools/booststudio/{}", rclone_name), BaseDirectory::Resource)
+        .resolve(format!("tools/booststudio/{}", rclone_name), BaseDirectory::AppData)
         .expect("failed to resolve resource");
 
     let mut cmd = Command::new(booststudio_path);
@@ -53,7 +53,7 @@ pub async fn pack_psarc(
     };
 
     let booststudio_path = app.path()
-        .resolve(format!("resources/tools/booststudio/{}", rclone_name), BaseDirectory::Resource)
+        .resolve(format!("tools/booststudio/{}", rclone_name), BaseDirectory::AppData)
         .expect("failed to resolve resource");
 
     let input_arg = format!("--input {}", source_directory_path);

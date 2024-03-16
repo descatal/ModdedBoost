@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{LineWriter, Write};
+use std::path::PathBuf;
 use std::process::Stdio;
 
 use configparser::ini::Ini;
@@ -27,11 +28,11 @@ pub async fn rclone(
     };
 
     let rclone_path = app.path()
-        .resolve(format!("resources/tools/rclone/{}", rclone_name), BaseDirectory::Resource)
+        .resolve(format!("tools/rclone/{}", rclone_name), BaseDirectory::AppData)
         .expect("failed to resolve resource");
 
     let rclone_conf_path = app.path()
-        .resolve("resources/tools/rclone/rclone.conf", BaseDirectory::Resource)
+        .resolve("tools/rclone.conf", BaseDirectory::AppData)
         .expect("failed to resolve resource");
     
     let exclusion_list_path = app.path()

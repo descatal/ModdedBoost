@@ -84,7 +84,7 @@ pub async fn check_game_versions(
 }
 
 #[tauri::command]
-pub async fn check_directory_exist(
+pub async fn check_path_exist(
     full_path: &str,
 ) -> Result<(bool), ()> {
     let path: &Path = Path::new(&full_path);

@@ -2,13 +2,14 @@ use tauri::Manager;
 
 use crate::commands::{get_file_metadata_command, clear_cached_metadata_command, get_file_modified_epoch_command, rclone_command, pack_psarc_command};
 use crate::downloader::custom_downloader;
-use crate::file_check::{check_game_versions, check_directory_exist};
+use crate::file_check::{check_game_versions, check_path_exist};
 use crate::file_handler::get_file_system_entries;
 use crate::game::{auto_find_path_and_run_game, launch_game};
 use crate::notify::notify;
 use crate::updater::update_tauri;
 use crate::rpcs3::{validate_rpcs3_executable, check_rpcs3_running};
 use crate::initialize::{initialize, check_initialized};
+use crate::app_initialize::{initialize_resources};
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 mod os;
@@ -24,6 +25,7 @@ mod file_metadata;
 mod psarc;
 mod initialize;
 mod rpcs3;
+mod app_initialize;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -52,7 +54,7 @@ pub fn run() {
             notify,
             get_file_system_entries,
             check_game_versions,
-            check_directory_exist,
+            check_path_exist,
             auto_find_path_and_run_game,
             launch_game,
             update_tauri,
@@ -65,7 +67,8 @@ pub fn run() {
             validate_rpcs3_executable,
             initialize,
             check_initialized,
-            pack_psarc_command
+            pack_psarc_command,
+            initialize_resources
         ])
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_store::Builder::default().build())

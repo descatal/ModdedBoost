@@ -20,11 +20,11 @@ import {MirrorGroupToggle} from "@/components/common/title-bar/mirror-group-togg
 import {useAppStore} from "@/lib/store/app.ts";
 import {toast} from "sonner";
 import i18n from "i18next";
-import {refreshAllLocalMetadata} from "@/lib/update.ts";
 import {Separator} from "@/components/ui/separator.tsx";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuTrigger} from "@/components/ui/dropdown-menu.tsx";
 import {LuRefreshCcwDot} from "react-icons/lu";
 import {invoke} from "@tauri-apps/api/core";
+import {refreshLocalMetadataList} from "@/lib/refresh.ts";
 
 interface FileDialogsProps {
   gameId: string;
@@ -50,7 +50,7 @@ const FilesDialog = ({gameId, modVersion, files, triggerContent}: FileDialogsPro
   
   const refresh = async (showToast: boolean) => {
     const filePaths = files.map(item=> item.path);
-    await refreshAllLocalMetadata(filePaths, showToast)
+    await refreshLocalMetadataList(filePaths, false, showToast)
   }
   
   const removeMetadataCache = async () => {

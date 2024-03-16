@@ -1,13 +1,13 @@
-import {join, resolveResource} from "@tauri-apps/api/path";
+import {appConfigDir, join} from "@tauri-apps/api/path";
 import {readTextFile} from "@tauri-apps/plugin-fs";
 import {updateMetadata} from "@/lib/remote.ts";
 import {cloneDeep} from "lodash";
 
 export async function loadMetadata(getRemote: boolean) {
-  if (getRemote) await updateMetadata();
+  await updateMetadata(getRemote);
 
-  const resourcePath = await resolveResource('resources/metadata.json')
-  const metadata: Metadata = JSON.parse(await readTextFile(resourcePath))
+  const metadataPath = await join(await appConfigDir(), 'metadata.json');
+  const metadata: Metadata = JSON.parse(await readTextFile(metadataPath))
 
   return metadata
 }
@@ -16,6 +16,7 @@ export async function transformPaths(rpcs3Directory: string, metadata: Metadata,
   const clonedMetadata = cloneDeep(metadata)
   clonedMetadata.base.path = await join(rpcs3Directory, replaceGameIdInternal(clonedMetadata.base.path, gameId))
   clonedMetadata.base.remotePath = replaceGameIdInternal(clonedMetadata.base.remotePath, gameId)
+  clonedMetadata.base.dlcPath = await join(rpcs3Directory, replaceGameIdInternal(clonedMetadata.base.dlcPath, gameId))
   clonedMetadata.mod.files = await Promise.all(clonedMetadata.mod.files.map(async (item) => {
     item.path = await join(rpcs3Directory, replaceGameIdInternal(item.path, gameId))
     item.remotePath = replaceGameIdInternal(item.remotePath, gameId)
@@ -39,6 +40,8 @@ export type Metadata = {
 export type SyncBase = {
   path: string, 
   remotePath: string,
+  dlcPath: string,
+  dlcRemotePath: string,
   excludePaths: string[]
 }
 

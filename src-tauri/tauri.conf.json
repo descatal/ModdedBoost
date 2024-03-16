@@ -46,7 +46,7 @@
       "dialog": true,
       "active": true,
       "endpoints": [
-        "https://descatal.github.io/cdn/updates/moddedboost.json"
+        "https://descatal.github.io/cdn/updates/moddedboost-china.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMzMEY0RjU1MEIzNjc1OEMKUldTTWRUWUxWVThQdzgxcHZaL2hPaExkcmJXWHNFandSVUh2Vnl1T205OG0rYUJ2aUh5V01MdXUK"
     }

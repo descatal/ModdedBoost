@@ -23,10 +23,14 @@ type DetectedGameVersions = {
 
 const Games = () => {
   const {t} = useTranslation();
-  const rpcs3Path = useConfigStore((state) => state.rpcs3Path);
+  const {rpcs3Path, lastSelectedTab, setLastSelectedTab} = useConfigStore((state) => ({
+    rpcs3Path: state.rpcs3Path,
+    lastSelectedTab: state.lastSelectedTab,
+    setLastSelectedTab: state.setLastSelectedTab,
+  }));
   const navigate = useNavigate();
-  const { loadedMetadata, setLoadedMetadata } = useAppStore(
-(state) => ({
+  const {loadedMetadata, setLoadedMetadata} = useAppStore(
+    (state) => ({
       loadedMetadata: state.loadedMetadata,
       setLoadedMetadata: state.setLoadedMetadata,
     }),
@@ -34,6 +38,10 @@ const Games = () => {
   );
   const [gameVersions, setGameVersions] = useState<DetectedGameVersions | undefined>();
 
+  const onTabChange = async (value: string) => {
+    await setLastSelectedTab(value);
+  }
+  
   const checkRpcs3 = async () => {
     const isValidRpcs3: boolean = await checkRpcs3Validity(rpcs3Path)
     if (isValidRpcs3) {
@@ -65,14 +73,14 @@ const Games = () => {
     const timedRefresh = setInterval(async () => {
       //await getMetadata();
     }, 300000); // redo metadata refresh every 5 minutes
-    
+
     if (gameVersions) {
       getMetadata().catch(console.error)
     }
 
     return () => clearInterval(timedRefresh);
   }, [gameVersions])
-  
+
   return (
     <div className={"min-h-screen flex h-screen"}>
       <div className={"m-auto w-full max-w-md space-y-6"}>
@@ -122,25 +130,28 @@ const Games = () => {
                       <h1>{t("No games found!")}</h1>
                     </div>
                     : <Tabs
-                        className={`min-w-[400px]`}
-                        defaultValue={`${gameVersions.BLJS10250 ? "bljs" : "npjb"}`}>
-                        <TabsList
-                          className={`${gameVersions.BLJS10250 && gameVersions.NPJB00512 ? "grid-cols-2" : "grid-cols-1"} grid w-full`}>
-                          {gameVersions.BLJS10250 && <TabsTrigger value="bljs">BLJS10250</TabsTrigger>}
-                          {gameVersions.NPJB00512 && <TabsTrigger value="npjb">NPJB00512</TabsTrigger>}
-                        </TabsList>
-                        {
-                          gameVersions.BLJS10250 &&
-                            <TabsContent value="bljs">
-                                <GameTabs gameId={"BLJS10250"} metadata={loadedMetadata} />
-                            </TabsContent>
-                        }
-                        {
-                          gameVersions.NPJB00512 &&
-                            <TabsContent value="npjb">
-                                <GameTabs gameId={"NPJB00512"} metadata={loadedMetadata} />
-                            </TabsContent>
-                        }
+                      value={lastSelectedTab.length === 0 ? `${gameVersions.BLJS10250 ? "bljs" : "npjb"}` : lastSelectedTab }
+                      onValueChange={async (tab) => {
+                        await onTabChange(tab)
+                      }}
+                      className={`min-w-[400px]`}>
+                      <TabsList
+                        className={`${gameVersions.BLJS10250 && gameVersions.NPJB00512 ? "grid-cols-2" : "grid-cols-1"} grid w-full`}>
+                        {gameVersions.BLJS10250 && <TabsTrigger value="bljs">BLJS10250</TabsTrigger>}
+                        {gameVersions.NPJB00512 && <TabsTrigger value="npjb">NPJB00512</TabsTrigger>}
+                      </TabsList>
+                      {
+                        gameVersions.BLJS10250 &&
+                          <TabsContent value="bljs">
+                              <GameTabs gameId={"BLJS10250"} metadata={loadedMetadata}/>
+                          </TabsContent>
+                      }
+                      {
+                        gameVersions.NPJB00512 &&
+                          <TabsContent value="npjb">
+                              <GameTabs gameId={"NPJB00512"} metadata={loadedMetadata}/>
+                          </TabsContent>
+                      }
                     </Tabs>
               }
             </CardContent>

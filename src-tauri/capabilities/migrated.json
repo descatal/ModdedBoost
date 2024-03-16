@@ -30,7 +30,17 @@
     "fs:allow-write-text-file",
     {
       "identifier": "fs:scope",
-      "allow": [{ "path": "$RESOURCE" }, { "path": "$RESOURCE/**" }]
+      "allow": [
+        {
+          "path": "$HOME/**"
+        },
+        {
+          "path": "$RESOURCE"
+        },
+        {
+          "path": "$RESOURCE/**"
+        }
+      ]
     }
   ],
   "platforms": [

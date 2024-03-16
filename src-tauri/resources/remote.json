@@ -1,4 +1,5 @@
 {
   "mirrors": "https://descatal.github.io/cdn/metadata/mirrors.json",
-  "metadata": "https://descatal.github.io/cdn/metadata/metadata.json"
+  "metadata": "https://descatal.github.io/cdn/metadata/metadata.json",
+  "rcloneConf": "https://descatal.github.io/cdn/rclone/rclone.conf"
 }

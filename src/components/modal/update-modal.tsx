@@ -12,6 +12,7 @@ import {useState} from "react";
 import {relaunch} from "@tauri-apps/plugin-process";
 import IconButton from "@/components/common/icon-button.tsx";
 import {UpdateIcon} from "@radix-ui/react-icons";
+import {info} from "@tauri-apps/plugin-log";
 
 function UpdateModal() {
   const {t} = useTranslation();
@@ -37,6 +38,7 @@ function UpdateModal() {
             onClick={async () => {
               setIsUpdating(true)
               if (updateInfo) {
+                await info("Updating application")
                 await updateInfo.downloadAndInstall();
                 await relaunch();
               }

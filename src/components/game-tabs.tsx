@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import {useEffect, useState} from "react";
 import {invoke} from "@tauri-apps/api/core";
 import {GameVersions, Metadata, transformPaths} from "@/lib/metadata.ts";
-import {dirname, join} from "@tauri-apps/api/path";
+import {dirname} from "@tauri-apps/api/path";
 import FilesDialog from "@/components/dialogs/files/files-dialog.tsx";
 import IconButton from "@/components/common/icon-button.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
@@ -17,7 +17,7 @@ import {useSessionStorage} from "@/lib/store/session-storage.ts";
 import {toast} from "sonner";
 import i18n from "i18next";
 import {useAppStore} from "@/lib/store/app.ts";
-import {refreshAllLocalMetadata} from "@/lib/update.ts";
+import {refreshLocalMetadataList} from "@/lib/refresh.ts";
 
 type ConfigProps = {
   gameId: GameVersions,
@@ -57,7 +57,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   const [isSyncingBaseFolder, setIsSyncingBaseFolder] = useState(false)
   const [isLaunchingGame, setIsLaunchingGame] = useState(false)
   // Make a clone of the object as different game versions should have their own copy of their metadata.
-  const [gameMetadata, setGameMetadata] = useState(cloneDeep(metadata))
+  const [gameMetadata, setGameMetadata] = useState<Metadata | undefined>()
   
   const launchGame = async (rpcs3Path: String, gameId: "BLJS10250" | "NPJB00512") => {
     const isRpcs3Running = await invoke("check_rpcs3_running")
@@ -74,18 +74,28 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   };
 
   const checkBaseFolder = async () => {
-    const rpcs3Directory = await dirname(rpcs3Path);
-    const targetDirectory = await join(rpcs3Directory, `dev_hdd0/game/${gameId}/`)
     const runCommand = async (remote: string) => {
-      return await invoke<boolean>("rclone_command", {
+      const isSync = await invoke<boolean>("rclone_command", {
         command: "check",
         remote: `${remote}`,
-        remotePath: `${remote}:/base_folders/${gameId}`,
-        targetPath: targetDirectory,
+        remotePath: `${remote}:/${gameMetadata!.base.remotePath}`,
+        targetPath: gameMetadata!.base.path,
         additionalFlags: "--fast-list",
         excludeItems: gameMetadata!.base.excludePaths,
         listenerId: "check_base_folder"
       });
+
+      const isDlcSync = await invoke<boolean>("rclone_command", {
+        command: "check",
+        remote: `${remote}`,
+        remotePath: `${remote}:/${gameMetadata!.base.dlcRemotePath}`,
+        targetPath: gameMetadata!.base.dlcPath,
+        additionalFlags: "--fast-list",
+        excludeItems: [],
+        listenerId: "check_base_folder_dlc"
+      });
+      
+      return isSync && isDlcSync;
     }
 
     for (const item of mirrorGroup.remotes) {
@@ -109,18 +119,28 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   };
 
   const syncBaseFolder = async () => {
-    const rpcs3Directory = await dirname(rpcs3Path);
-    const targetDirectory = await join(rpcs3Directory, `dev_hdd0/game/${gameId}/`)
     const runCommand = async (remote: string) => {
-      return await invoke<boolean>("rclone_command", {
+      const syncBaseSuccessful = await invoke<boolean>("rclone_command", {
         command: "sync",
         remote: `${remote}`,
-        remotePath: `${remote}:/base_folders/${gameId}`,
-        targetPath: targetDirectory,
-        additionalFlags: "--delete-during --ignore-size --verbose --no-update-modtime --transfers 4 --checkers 8 --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 --stats 1s --stats-file-name-length 0 --fast-list",
+        remotePath: `${remote}:/${gameMetadata!.base.remotePath}`,
+        targetPath: gameMetadata!.base.path,
+        additionalFlags: "--delete-during --ignore-size --verbose --transfers 4 --checkers 8 --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 --stats 1s --stats-file-name-length 0 --fast-list",
         excludeItems: gameMetadata!.base.excludePaths,
         listenerId: "sync_base_folder"
       });
+
+      const syncDlcSuccessful = await invoke<boolean>("rclone_command", {
+        command: "sync",
+        remote: `${remote}`,
+        remotePath: `${remote}:/${gameMetadata!.base.dlcRemotePath}`,
+        targetPath: gameMetadata!.base.dlcPath,
+        additionalFlags: "--delete-during --ignore-size --verbose --transfers 4 --checkers 8 --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 --stats 1s --stats-file-name-length 0 --fast-list",
+        excludeItems: gameMetadata!.base.excludePaths,
+        listenerId: "sync_base_folder"
+      });
+      
+      return syncBaseSuccessful && syncDlcSuccessful
     }
 
     for (const item of mirrorGroup.remotes) {
@@ -144,39 +164,44 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   useEffect(() => {
     const convertPaths = async () => {
       const rpcs3Directory = await dirname(rpcs3Path)
-      const result = await transformPaths(rpcs3Directory, metadata, gameId);
+      const result = await transformPaths(rpcs3Directory, cloneDeep(metadata), gameId);
       result.mod.files = result.mod.files.filter(map => map.versions.includes(gameId))
       setGameMetadata(result)
 
       const filePaths = result.mod.files.map(item=> item.path);
-      await refreshAllLocalMetadata(filePaths, false)
+      await refreshLocalMetadataList(filePaths, false, false)
     }
+    
     convertPaths().catch(console.error)
   }, [metadata])
   
   useEffect(() => {
+    if (gameMetadata) {
+      const lastCheckedTime = baseFolderLastChecked.find(item => item.gameId === gameId)
+      const currentTime = new Date().getTime();
+      const thresholdMs = 60 * 60 * 1000;
+      if (!lastCheckedTime || (currentTime - lastCheckedTime.timestamp) > thresholdMs) {
+        // Only execute check if the last check is 1 hour or more
+        checkBaseFolder().catch(err => console.error(err));
+      }
+    }
+  }, [gameMetadata])
+  
+  useEffect(() => {
     const checkOutdated = async () => {
-      const allRemoteChecksum = gameMetadata.mod.files.map(item => item.md5).sort()
-      const allLocalFilesChecksum = localMetadata.map(item => item.checksum).sort()
-      const isInSync = (
-        allRemoteChecksum.length === allLocalFilesChecksum.length
-        && allRemoteChecksum.every((value, index) => value === allLocalFilesChecksum[index])
-      )
-      setIsModFilesOutdated(!isInSync)
+      if (gameMetadata) {
+        const allRemoteChecksum = gameMetadata.mod.files.map(item => item.md5).sort()
+        const allLocalFilesChecksum = localMetadata.map(item => item.checksum).sort()
+        const isInSync = (
+          allRemoteChecksum.length === allLocalFilesChecksum.length
+          && allRemoteChecksum.every((value, index) => value === allLocalFilesChecksum[index])
+        )
+        setIsModFilesOutdated(!isInSync)
+      }
     }
 
     checkOutdated().catch(console.error)
   }, [localMetadata])
-
-  useEffect(() => {
-    const lastCheckedTime = baseFolderLastChecked.find(item => item.gameId === gameId)
-    const currentTime = new Date().getTime();
-    const thresholdMs = 60 * 60 * 1000;
-    if (!lastCheckedTime || (currentTime - lastCheckedTime.timestamp) > thresholdMs) {
-      // Only execute check if the last check is 1 hour or more
-      checkBaseFolder().catch(err => console.error(err));
-    }
-  }, []);
 
   useEffect(() => {
     const newBaseFolderCheckProcess = processes.find(process => process.id === baseFolderCheckProcessId)
