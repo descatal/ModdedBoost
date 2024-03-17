@@ -5,13 +5,15 @@ import {ProcessProps, useProcessListStore} from "@/lib/store/process.ts";
 import {ModFiles} from "@/lib/metadata.ts";
 import {refreshLocalMetadata} from "@/lib/refresh.ts";
 
-const executeCommand = async (file: ModFiles, 
-                              command: (file: ModFiles, remote: string) => Promise<boolean>): Promise<boolean> => {
+const executeCommand = async (
+  file: ModFiles, 
+  command: (path: string, remotePath: string, remote: string) => Promise<boolean>
+): Promise<boolean> => {
   const {mirrorGroup} = useConfigStore.getState()
 
   for (const item of mirrorGroup.remotes) {
     try {
-      return await command(file, item.rcloneName)
+      return await command(file.path, file.remotePath, item.rcloneName)
     } catch (e) {
       console.error(e);
     }
@@ -19,27 +21,27 @@ const executeCommand = async (file: ModFiles,
   return false
 }
 
-const copyFileCommand = async (file: ModFiles, remote: string) => {
+export const copyFileCommand = async (path: string, remotePath: string, remote: string) => {
   return await invoke<boolean>("rclone_command", {
     command: "copyto",
     remote: `${remote}`,
-    remotePath: `${remote}:/${file.remotePath}`,
-    targetPath: file.path,
+    remotePath: `${remote}:/${remotePath}`,
+    targetPath: path,
     additionalFlags: "--verbose --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 --stats 1s --stats-file-name-length 0 --fast-list",
     excludeItems: [],
     listenerId: "copy_file"
   });
 }
 
-const syncPsarcCommand = async (file: ModFiles, remote: string) => {
+export const syncPsarcCommand = async (path: string, remotePath: string, remote: string) => {
   const {rpcs3Path} = useConfigStore.getState()
 
   const rpcs3Directory = await dirname(rpcs3Path);
-  const targetDirectory = await join(rpcs3Directory, ".moddedboost", file.remotePath)
+  const targetDirectory = await join(rpcs3Directory, ".moddedboost", remotePath)
   return await invoke<boolean>("rclone_command", {
     command: "sync",
     remote: `${remote}`,
-    remotePath: `${remote}:/${file.remotePath}`,
+    remotePath: `${remote}:/${remotePath}`,
     targetPath: targetDirectory,
     additionalFlags: "--delete-during --verbose --transfers 4 --checkers 8 --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 --stats 1s --stats-file-name-length 0 --fast-list",
     excludeItems: [],

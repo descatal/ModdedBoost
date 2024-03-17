@@ -17,6 +17,7 @@ export async function transformPaths(rpcs3Directory: string, metadata: Metadata,
   clonedMetadata.base.path = await join(rpcs3Directory, replaceGameIdInternal(clonedMetadata.base.path, gameId))
   clonedMetadata.base.remotePath = replaceGameIdInternal(clonedMetadata.base.remotePath, gameId)
   clonedMetadata.base.dlcPath = await join(rpcs3Directory, replaceGameIdInternal(clonedMetadata.base.dlcPath, gameId))
+  clonedMetadata.base.patchPath = await join(rpcs3Directory, replaceGameIdInternal(clonedMetadata.base.patchPath, gameId))
   clonedMetadata.mod.files = await Promise.all(clonedMetadata.mod.files.map(async (item) => {
     item.path = await join(rpcs3Directory, replaceGameIdInternal(item.path, gameId))
     item.remotePath = replaceGameIdInternal(item.remotePath, gameId)
@@ -42,6 +43,9 @@ export type SyncBase = {
   remotePath: string,
   dlcPath: string,
   dlcRemotePath: string,
+  patchPath: string,
+  patchRemotePath: string,
+  patchMd5: string,
   excludePaths: string[]
 }
 

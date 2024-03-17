@@ -4,6 +4,9 @@
     "remotePath": "base_folders/{GAME_ID}",
     "dlcPath": "dev_hdd0/game/NPJB00512/USRDIR/dlc",
     "dlcRemotePath": "base_folders/dlc",
+    "patchPath": "patches/imported_patch.yml",
+    "patchRemotePath": "patches/imported_patch.yml",
+    "patchMd5": "4b5356877c8707f2d059a8eb40c47b80",
     "excludePaths": [
       "/USRDIR/dlc/**",
       "/USRDIR/patch_01_00.psarc",

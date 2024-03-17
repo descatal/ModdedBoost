@@ -2,10 +2,10 @@
 import {FileIcon, RocketIcon, UpdateIcon,} from "@radix-ui/react-icons";
 import {Label} from "@/components/ui/label.tsx";
 import {useTranslation} from "react-i18next";
-import {useEffect, useState} from "react";
+import {Dispatch, SetStateAction, useEffect, useState} from "react";
 import {invoke} from "@tauri-apps/api/core";
 import {GameVersions, Metadata, transformPaths} from "@/lib/metadata.ts";
-import {dirname} from "@tauri-apps/api/path";
+import {dirname, join} from "@tauri-apps/api/path";
 import FilesDialog from "@/components/dialogs/files/files-dialog.tsx";
 import IconButton from "@/components/common/icon-button.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
@@ -16,8 +16,9 @@ import {cloneDeep, isEqual} from "lodash";
 import {useSessionStorage} from "@/lib/store/session-storage.ts";
 import {toast} from "sonner";
 import i18n from "i18next";
-import {useAppStore} from "@/lib/store/app.ts";
+import {LocalFileMetadata, useAppStore} from "@/lib/store/app.ts";
 import {refreshLocalMetadataList} from "@/lib/refresh.ts";
+import {copyFileCommand} from "@/lib/update.ts";
 
 type ConfigProps = {
   gameId: GameVersions,
@@ -25,21 +26,14 @@ type ConfigProps = {
 }
 
 function GameTabs({gameId, metadata}: ConfigProps) {
-  const baseFolderSyncProcessId = `BaseFolderSync_${gameId}`;
-  const defaultBaseFolderSyncProcess: ProcessProps = {
-    id: baseFolderSyncProcessId,
+  const baseFolderSyncProcessId = `base_folder_sync_${gameId}`;
+  const baseFolderCheckProcessId = `base_folder_check_${gameId}`;
+  const patchActivationCheckProcessId = `patch_activation_check_${gameId}`;
+  const patchActivateProcessId = `patch_activate_${gameId}`;
+  const defaultCheckProcess: ProcessProps = {
+    id: "",
     status: "Finished",
-    name: baseFolderSyncProcessId,
-    type: "Check",
-    progress: 0,
-    total: 0,
-    percentage: 0
-  }
-  const baseFolderCheckProcessId = `BaseFolderSync_${gameId}`;
-  const defaultBaseFolderCheckProcess: ProcessProps = {
-    id: baseFolderCheckProcessId,
-    status: "Finished",
-    name: baseFolderCheckProcessId,
+    name: "",
     type: "Check",
     progress: 0,
     total: 0,
@@ -50,13 +44,17 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   const {rpcs3Path, mirrorGroup} = useConfigStore.getState()
   const {isModFilesOutdated, localMetadata, setIsModFilesOutdated, setOpenRunningProcessModal} = useAppStore()
   const {baseFolderLastChecked, setBaseFolderLastChecked} = useSessionStorage();
-  const [baseFolderSyncProcess, setBaseFolderSyncProcess] = useState(defaultBaseFolderSyncProcess)
-  const [baseFolderCheckProcess, setBaseFolderCheckProcess] = useState(defaultBaseFolderCheckProcess)
+  const [baseFolderSyncProcess, setBaseFolderSyncProcess] = useState({...defaultCheckProcess, id: baseFolderSyncProcessId, name: baseFolderSyncProcessId})
+  const [baseFolderCheckProcess, setBaseFolderCheckProcess] = useState({...defaultCheckProcess, id: baseFolderCheckProcessId, name: baseFolderCheckProcessId})
+  const [patchActivationCheckProcess, setPatchActivationCheckProcess] = useState({...defaultCheckProcess, id: patchActivationCheckProcessId, name: patchActivationCheckProcessId})
+  const [patchActivateProcess, setPatchActivateProcess] = useState({...defaultCheckProcess, id: patchActivateProcessId, name: patchActivateProcessId})
   const [isBaseFolderOutdated, setIsBaseFolderOutdated] = useState(false)
+  const [isPatchActivated, setIsPatchActivated] = useState(false)
   const [isCheckingBaseFolder, setIsCheckingBaseFolder] = useState(false)
+  const [isCheckingPatchActivation, setIsCheckingPatchActivation] = useState(false)
   const [isSyncingBaseFolder, setIsSyncingBaseFolder] = useState(false)
+  const [isActivatingPatch, setIsActivatingPatch] = useState(false)
   const [isLaunchingGame, setIsLaunchingGame] = useState(false)
-  // Make a clone of the object as different game versions should have their own copy of their metadata.
   const [gameMetadata, setGameMetadata] = useState<Metadata | undefined>()
   
   const launchGame = async (rpcs3Path: String, gameId: "BLJS10250" | "NPJB00512") => {
@@ -98,26 +96,15 @@ function GameTabs({gameId, metadata}: ConfigProps) {
       return isSync && isDlcSync;
     }
 
-    for (const item of mirrorGroup.remotes) {
-      const loadingToastId = toast.loading(i18n.t("Validating base folder..."));
-      try {
-        await addOrUpdateProcess({...baseFolderCheckProcess, status: "Started"})
-        const commandResult = await runCommand(item.rcloneName)
-        if (commandResult) {
-          await setBaseFolderLastChecked(gameId, new Date().getTime())
-        }
-        setIsBaseFolderOutdated(!commandResult)
-        break
-      } catch (e) {
-        console.error(e);
-      } finally {
-        toast.dismiss(loadingToastId)
-        toast.success(i18n.t("Base folder validation complete."));
-        await addOrUpdateProcess({...baseFolderCheckProcess, status: "Finished"})
-      }
-    }
+    await runProcessCommand(
+      runCommand,
+      i18n.t("Validating base folder..."),
+      i18n.t("Base folder validation complete."),
+      baseFolderCheckProcess,
+      setBaseFolderLastChecked,
+      setIsBaseFolderOutdated)
   };
-
+  
   const syncBaseFolder = async () => {
     const runCommand = async (remote: string) => {
       const syncBaseSuccessful = await invoke<boolean>("rclone_command", {
@@ -143,27 +130,100 @@ function GameTabs({gameId, metadata}: ConfigProps) {
       return syncBaseSuccessful && syncDlcSuccessful
     }
 
+    await runProcessCommand(
+      runCommand,
+      i18n.t("Starting base folder sync..."),
+      i18n.t("Base folder sync complete."),
+      baseFolderSyncProcess,
+      setBaseFolderLastChecked,
+      setIsBaseFolderOutdated)
+  };
+
+  const checkPatchActivation = async () => {
+    const runCommand = async () => {
+      const patchFileMd5 = await invoke<LocalFileMetadata[]>("get_file_metadata_command", {
+        filePaths: [gameMetadata!.base.patchPath],
+      });
+      if (!(patchFileMd5[0]?.checksum ?? "" === gameMetadata!.base.patchMd5))
+        return false;
+
+      const rpcs3Dir = await dirname(rpcs3Path)
+      const patchConfigPath = await join(rpcs3Dir, "config", "patch_config.yml");
+      return await invoke<boolean>("check_patch_activated", {
+        patchPath: patchConfigPath
+      });
+    }
+
+    await runProcessCommand(
+      runCommand,
+      i18n.t("Checking patch file activation status..."),
+      i18n.t("Patch file activation status check complete."),
+      patchActivationCheckProcess,
+      async () => {},
+      setIsPatchActivated)
+  }
+
+  const activatePatch = async () => {
+    const runCommand = async (remote: string) => {
+      const patchFileMd5 = await invoke<LocalFileMetadata[]>("get_file_metadata_command", {
+        filePaths: [gameMetadata!.base.patchPath],
+      });
+      if (!(patchFileMd5[0]?.checksum ?? "" === gameMetadata!.base.patchMd5)) {
+        const copySuccessful = await copyFileCommand(gameMetadata!.base.patchPath, gameMetadata!.base.patchRemotePath, remote)
+        if (!copySuccessful) return false;
+      }
+      
+      const rpcs3Dir = await dirname(rpcs3Path)
+      const patchConfigPath = await join(rpcs3Dir, "config", "patch_config.yml");
+      return await invoke<boolean>("activate_patch", {
+        patchPath: patchConfigPath
+      });
+    }
+
+    await runProcessCommand(
+      runCommand,
+      i18n.t("Activating patch..."),
+      i18n.t("Patch file activation complete."),
+      patchActivateProcess,
+      async () => {
+        await checkPatchActivation()
+      },
+      setIsPatchActivated)
+  }
+
+
+  const runProcessCommand = async (
+    command: (...args: any[]) => Promise<boolean>,
+    loadingToastText: string,
+    finishedToastText: string,
+    process: ProcessProps,
+    stateActionOnSuccess: (...args: any[]) => Promise<void>,
+    postOperationStateAction: Dispatch<SetStateAction<boolean>>
+  ) => {
     for (const item of mirrorGroup.remotes) {
-      const loadingToastId = toast.loading(i18n.t("Starting base folder sync..."));
+      const loadingToastId = toast.loading(loadingToastText);
       try {
-        await addOrUpdateProcess({...baseFolderSyncProcess, status: "Started"})
-        const commandResult = await runCommand(item.rcloneName)
-        if (commandResult) await setBaseFolderLastChecked(gameId, new Date().getTime())
-        setIsBaseFolderOutdated(!commandResult)
+        await addOrUpdateProcess({...process, status: "Started"})
+        const commandResult = await command(item.rcloneName)
+        if (commandResult) {
+          await stateActionOnSuccess(gameId, new Date().getTime())
+        }
+        postOperationStateAction(!commandResult)
         break
       } catch (e) {
         console.error(e);
       } finally {
         toast.dismiss(loadingToastId)
-        toast.success(i18n.t("Base folder sync complete."));
-        await addOrUpdateProcess({...baseFolderSyncProcess, status: "Finished"})
+        toast.success(finishedToastText);
+        await addOrUpdateProcess({...process, status: "Finished"})
       }
     }
-  };
-
+  }
+  
   useEffect(() => {
     const convertPaths = async () => {
       const rpcs3Directory = await dirname(rpcs3Path)
+      // Make a clone of the object as different game versions should have their own copy of their metadata.
       const result = await transformPaths(rpcs3Directory, cloneDeep(metadata), gameId);
       result.mod.files = result.mod.files.filter(map => map.versions.includes(gameId))
       setGameMetadata(result)
@@ -184,6 +244,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
         // Only execute check if the last check is 1 hour or more
         checkBaseFolder().catch(err => console.error(err));
       }
+      checkPatchActivation().catch(err => console.error(err));
     }
   }, [gameMetadata])
   
@@ -204,26 +265,53 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   }, [localMetadata])
 
   useEffect(() => {
-    const newBaseFolderCheckProcess = processes.find(process => process.id === baseFolderCheckProcessId)
-    const newBaseFolderSyncProcess = processes.find(process => process.id === baseFolderSyncProcessId)
-    if (newBaseFolderCheckProcess && !isEqual(newBaseFolderCheckProcess, baseFolderCheckProcess)) {
-      if (newBaseFolderCheckProcess.status.toLocaleLowerCase() === "started") {
-        setIsCheckingBaseFolder(true)
-      } else if (newBaseFolderCheckProcess.status.toLocaleLowerCase() === "finished") {
-        setIsCheckingBaseFolder(false)
-      }
-      setBaseFolderCheckProcess(newBaseFolderCheckProcess)
-    }
-    if (newBaseFolderSyncProcess && !isEqual(newBaseFolderSyncProcess, baseFolderSyncProcess)) {
-      if (newBaseFolderSyncProcess.status.toLocaleLowerCase() === "started") {
-        setIsSyncingBaseFolder(true)
-      } else if (newBaseFolderSyncProcess.status.toLocaleLowerCase() === "finished") {
-        setIsSyncingBaseFolder(false)
-      }
-      setBaseFolderSyncProcess(newBaseFolderSyncProcess)
-    }
+    parseProcess(
+      baseFolderCheckProcessId, 
+      baseFolderCheckProcess, 
+      setIsCheckingBaseFolder, 
+      setIsCheckingBaseFolder, 
+      setBaseFolderCheckProcess)
+    
+    parseProcess(
+      baseFolderSyncProcessId, 
+      baseFolderSyncProcess, 
+      setIsSyncingBaseFolder, 
+      setIsSyncingBaseFolder, 
+      setBaseFolderSyncProcess)
+
+    parseProcess(
+      patchActivationCheckProcessId,
+      patchActivationCheckProcess,
+      setIsCheckingPatchActivation,
+      setIsCheckingPatchActivation,
+      setPatchActivationCheckProcess)
+
+    parseProcess(
+      patchActivateProcessId,
+      patchActivateProcess,
+      setIsActivatingPatch,
+      setIsActivatingPatch,
+      setPatchActivateProcess)
   }, [processes])
 
+  const parseProcess = (
+    processId : string, 
+    process: ProcessProps, 
+    startStateAction: Dispatch<SetStateAction<boolean>>,
+    endStateAction: Dispatch<SetStateAction<boolean>>,
+    postProcessStateAction: Dispatch<SetStateAction<ProcessProps>>
+  ) => {
+    const newProcess = processes.find(process => process.id === processId)
+    if (newProcess && !isEqual(newProcess, process)) {
+      if (newProcess.status.toLocaleLowerCase() === "started") {
+        startStateAction(true)
+      } else if (newProcess.status.toLocaleLowerCase() === "finished") {
+        endStateAction(false)
+      }
+      postProcessStateAction(newProcess)
+    }
+  }
+  
   return (
     <div> {
       <Card className={`border-gray-300 mx-auto w-full p-6 rounded-lg shadow-lg`}>
@@ -259,9 +347,38 @@ function GameTabs({gameId, metadata}: ConfigProps) {
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
+              <Label className="text-sm font-medium">{`${t("Patch Activated")}`}</Label>
+              {
+                !isPatchActivated ?
+                  <Badge className={"bg-green-500"}>{t("Activated")}</Badge> :
+                  <Badge variant={"destructive"}>{t("Not Activated")}</Badge>
+              }
+            </div>
+            <div className="flex items-center space-x-2">
+              {
+                !isPatchActivated ?
+                  <IconButton
+                    tooltipContent={t("Check if imported_path.yml is activated in configuration")}
+                    buttonVariant={"outline"}
+                    buttonDescription={t("Recheck")}
+                    buttonIcon={<UpdateIcon/>}
+                    onClick={checkPatchActivation}
+                    isLoading={isCheckingPatchActivation}/> :
+                  <IconButton
+                    tooltipContent={t("Activate patch")}
+                    buttonVariant={"outline"}
+                    buttonDescription={t("Activate")}
+                    buttonIcon={<VscFoldUp/>}
+                    onClick={activatePatch}
+                    isLoading={isActivatingPatch}/>
+              }
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
               <Label className="text-sm font-medium">{`${t("Mod Files")}`}</Label>
               {
-                !isModFilesOutdated 
+                !isModFilesOutdated
                   ? <Badge className={"bg-green-500"}>{t("In Sync")}</Badge>
                   : <Badge variant={"destructive"}>{t("Out of Sync")}</Badge>
               }

@@ -10,6 +10,7 @@ use crate::updater::update_tauri;
 use crate::rpcs3::{validate_rpcs3_executable, check_rpcs3_running};
 use crate::initialize::{initialize, check_initialized};
 use crate::app_initialize::{initialize_resources};
+use crate::patches::{check_patch_activated, activate_patch};
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 mod os;
@@ -26,6 +27,7 @@ mod psarc;
 mod initialize;
 mod rpcs3;
 mod app_initialize;
+mod patches;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -68,7 +70,9 @@ pub fn run() {
             initialize,
             check_initialized,
             pack_psarc_command,
-            initialize_resources
+            initialize_resources,
+            check_patch_activated,
+            activate_patch
         ])
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_store::Builder::default().build())
