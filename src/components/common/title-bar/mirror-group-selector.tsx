@@ -7,13 +7,14 @@ import {shallow} from "zustand/shallow";
 import {useEffect, useState} from "react";
 import {loadMirrors, Mirrors} from "@/lib/mirrors.ts";
 import {VscCheck} from "react-icons/vsc";
+import {invoke} from "@tauri-apps/api/core";
 
 type MirrorGroupToggleProps = {
   buttonVariant?: "outline" | "link" | "default" | "destructive" | "secondary" | "ghost" | null | undefined,
   breakpoint?: "sm" | "md" | "lg" | "xl" | "2xl" | "none"
 }
 
-export function MirrorGroupToggle({buttonVariant = "ghost", breakpoint = "sm"}: MirrorGroupToggleProps) {
+export function MirrorGroupSelector({buttonVariant = "ghost", breakpoint = "sm"}: MirrorGroupToggleProps) {
   const {t} = useTranslation();
   const [mirrors, setMirrors] = useState<Mirrors>()
   
@@ -27,16 +28,30 @@ export function MirrorGroupToggle({buttonVariant = "ghost", breakpoint = "sm"}: 
 
   useEffect(() => {
     const getMirrors = async () => {
-      const loadedMirrors = await loadMirrors(false)
+      const loadedMirrors = await loadMirrors(true)
       setMirrors(loadedMirrors)
     };
     getMirrors().catch(console.error)
   }, [])
 
   useEffect(() => {
-    if (!selectedMirrorGroup.remotes.length && mirrors?.mirrorGroups.length) {
-      setSelectedMirrorGroup(mirrors.mirrorGroups[0])
+    
+    const autoSelectMirror = async () => {
+      // Ignore if mirrors aren't loaded or there's already a selected Mirror Group
+      if (!mirrors || selectedMirrorGroup.remotes.length) return;
+      
+      for (let mirrorGroup of mirrors.mirrorGroups) {
+        const isSuccessful = await invoke("get_is_success", {
+          remote: mirrorGroup.testUrl
+        })
+        if (isSuccessful) {
+          await setSelectedMirrorGroup(mirrorGroup)
+          break;
+        }
+      }
     }
+    
+    autoSelectMirror().catch(err => console.error(err))
   }, [mirrors])
   
   return (

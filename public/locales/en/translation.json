@@ -79,5 +79,19 @@
   "Path containing Chinese / Japanese characters are not supported!": "Path containing Chinese / Japanese characters are not supported!",
   "Not Found": "Not Found",
   "Clear Refresh Cache": "Clear Refresh Cache",
-  "Force launcher to redo all checksum calculations on refresh.": "Force launcher to redo all checksum calculations on refresh."
+  "Force launcher to redo all checksum calculations on refresh.": "Force launcher to redo all checksum calculations on refresh.",
+  "Patch Activation": "Patch Activated",
+  "Not Activated": "Not Activated",
+  "Activated": "Activated",
+  "Activate": "Activate",
+  "Check if imported_path.yml is activated in configuration": "Check if imported_path.yml is activated in configuration",
+  "Checking patch file activation status...": "Checking patch file activation status...",
+  "Patch file activation status check complete.": "Patch file activation status check complete.",
+  "Activating patch...": "Activating patch...",
+  "Patch file activation complete.": "Patch file activation complete.",
+  "Activation failed. Please check config/patch_config.yml format.": "Activation failed. Please check config/patch_config.yml format.",
+  "Invalid RAP file": "Invalid RAP file",
+  "A valid RAP file is required to launch the game.": "A valid RAP file is required to launch the game.",
+  "Please place your RAP file in 'dev_hdd0/home/00000001/exdata'": "Please place your RAP file in 'dev_hdd0/home/00000001/exdata'",
+  "More information": "More information"
 }

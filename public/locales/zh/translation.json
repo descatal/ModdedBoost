@@ -79,5 +79,19 @@
   "Path containing Chinese / Japanese characters are not supported!": "RPCS3 路径不可以含有中文 / 日文字母！请更改后重试。",
   "Not Found": "未找到文件",
   "Clear Refresh Cache": "清除刷新缓存",
-  "Force launcher to redo all checksum calculations on refresh.": "强制启动器在刷新时重做所有校验和计算"
+  "Force launcher to redo all checksum calculations on refresh.": "强制启动器在刷新时重做所有校验和计算",
+  "Patch Activation": "补丁激活状态",
+  "Not Activated": "未激活",
+  "Activated": "已激活",
+  "Activate": "激活",
+  "Check if imported_path.yml is activated in configuration": "检测 imported_path.yml 补丁是否已经被激活",
+  "Checking patch file activation status...": "检测补丁激活状态中。。。",
+  "Patch file activation status check complete.": "补丁激活状态检测完毕",
+  "Activating patch...": "激活补丁中。。。",
+  "Patch file activation complete.": "补丁激活完毕",
+  "Activation failed. Please check config/patch_config.yml format.": "补丁激活失败，请检测 config/patch_config.yml 是否是一个正确yaml的格式",
+  "Invalid RAP file": "无效 RAP 文件",
+  "A valid RAP file is required to launch the game.": "游戏启动需要一个有效的 RAP 文件",
+  "Please place your RAP file in 'dev_hdd0/home/00000001/exdata'": "请把有效的 RAP 文件放入 'dev_hdd0/home/00000001/exdata'",
+  "More information": "详情"
 }

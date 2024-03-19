@@ -37,6 +37,7 @@ export const useConfigStore = createWithEqualityFn<ConfigStore>()((set) => ({
   rpcs3Path: "",
   filesMetadataCache: [],
   mirrorGroup: {
+    testUrl: "",
     name: "",
     remotes: []
   },

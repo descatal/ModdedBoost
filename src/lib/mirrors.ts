@@ -7,6 +7,7 @@ export type Mirrors = {
 };
 
 export type MirrorGroup = {
+  testUrl: string,
   name: string,
   remotes: Remotes[]
 };

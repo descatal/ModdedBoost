@@ -42,7 +42,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   const {t} = useTranslation();
   const {processes, addOrUpdateProcess} = useProcessListStore();
   const {rpcs3Path, mirrorGroup} = useConfigStore.getState()
-  const {isModFilesOutdated, localMetadata, setIsModFilesOutdated, setOpenRunningProcessModal} = useAppStore()
+  const {isModFilesOutdated, localMetadata, setIsModFilesOutdated, setOpenRunningProcessModal, setOpenInvalidRapFileModal} = useAppStore()
   const {baseFolderLastChecked, setBaseFolderLastChecked} = useSessionStorage();
   const [baseFolderSyncProcess, setBaseFolderSyncProcess] = useState({...defaultCheckProcess, id: baseFolderSyncProcessId, name: baseFolderSyncProcessId})
   const [baseFolderCheckProcess, setBaseFolderCheckProcess] = useState({...defaultCheckProcess, id: baseFolderCheckProcessId, name: baseFolderCheckProcessId})
@@ -57,7 +57,24 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   const [isLaunchingGame, setIsLaunchingGame] = useState(false)
   const [gameMetadata, setGameMetadata] = useState<Metadata | undefined>()
   
-  const launchGame = async (rpcs3Path: String, gameId: "BLJS10250" | "NPJB00512") => {
+  const launchGame = async (rpcs3Path: string, gameId: "BLJS10250" | "NPJB00512") => {
+    if (gameId === "NPJB00512") {
+      const rpcs3Directory = await dirname(rpcs3Path)
+      const rapFilePath = await join(rpcs3Directory, "dev_hdd0", "home", "00000001", "exdata", "JP0700-NPJB00512_00-FULLBOOST000100A.rap")
+      await invoke<LocalFileMetadata[]>("get_file_metadata_command", {
+        filePaths: [rapFilePath],
+        ignoreModtime: true,
+      }).then(rapFileMetadata => {
+        console.log(rapFileMetadata[0].checksum)
+        if (!rapFileMetadata.length || rapFileMetadata[0].checksum != "4c266afc905455958a38a9c5c8590634") {
+          setOpenInvalidRapFileModal(true)
+        }
+      }).catch(err => {
+        console.error(err)
+        setOpenInvalidRapFileModal(true)
+      })
+    }
+    
     const isRpcs3Running = await invoke("check_rpcs3_running")
     if (isRpcs3Running) {
       setOpenRunningProcessModal(true)
@@ -98,6 +115,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
 
     await runProcessCommand(
       runCommand,
+      true,
       i18n.t("Validating base folder..."),
       i18n.t("Base folder validation complete."),
       baseFolderCheckProcess,
@@ -132,6 +150,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
 
     await runProcessCommand(
       runCommand,
+      true,
       i18n.t("Starting base folder sync..."),
       i18n.t("Base folder sync complete."),
       baseFolderSyncProcess,
@@ -139,7 +158,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
       setIsBaseFolderOutdated)
   };
 
-  const checkPatchActivation = async () => {
+  const checkPatchActivation = async (showToast: boolean) => {
     const runCommand = async () => {
       const patchFileMd5 = await invoke<LocalFileMetadata[]>("get_file_metadata_command", {
         filePaths: [gameMetadata!.base.patchPath],
@@ -156,6 +175,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
 
     await runProcessCommand(
       runCommand,
+      showToast,
       i18n.t("Checking patch file activation status..."),
       i18n.t("Patch file activation status check complete."),
       patchActivationCheckProcess,
@@ -175,25 +195,31 @@ function GameTabs({gameId, metadata}: ConfigProps) {
       
       const rpcs3Dir = await dirname(rpcs3Path)
       const patchConfigPath = await join(rpcs3Dir, "config", "patch_config.yml");
-      return await invoke<boolean>("activate_patch", {
+      const activationResult = await invoke<boolean>("activate_patch", {
         patchPath: patchConfigPath
       });
+      
+      if (!activationResult)
+        toast.error(i18n.t("Activation failed. Please check config/patch_config.yml format."))
+      
+      return activationResult
     }
 
     await runProcessCommand(
       runCommand,
+      true,
       i18n.t("Activating patch..."),
       i18n.t("Patch file activation complete."),
       patchActivateProcess,
       async () => {
-        await checkPatchActivation()
+        await checkPatchActivation(true)
       },
       setIsPatchActivated)
   }
-
-
+  
   const runProcessCommand = async (
     command: (...args: any[]) => Promise<boolean>,
+    showToast: boolean,
     loadingToastText: string,
     finishedToastText: string,
     process: ProcessProps,
@@ -201,7 +227,11 @@ function GameTabs({gameId, metadata}: ConfigProps) {
     postOperationStateAction: Dispatch<SetStateAction<boolean>>
   ) => {
     for (const item of mirrorGroup.remotes) {
-      const loadingToastId = toast.loading(loadingToastText);
+      let loadingToastId: string | number = ""
+      if (showToast) {
+        loadingToastId = toast.loading(loadingToastText);
+      }
+      
       try {
         await addOrUpdateProcess({...process, status: "Started"})
         const commandResult = await command(item.rcloneName)
@@ -213,8 +243,10 @@ function GameTabs({gameId, metadata}: ConfigProps) {
       } catch (e) {
         console.error(e);
       } finally {
-        toast.dismiss(loadingToastId)
-        toast.success(finishedToastText);
+        if (showToast) {
+          toast.dismiss(loadingToastId)
+          toast.success(finishedToastText);
+        }
         await addOrUpdateProcess({...process, status: "Finished"})
       }
     }
@@ -244,7 +276,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
         // Only execute check if the last check is 1 hour or more
         checkBaseFolder().catch(err => console.error(err));
       }
-      checkPatchActivation().catch(err => console.error(err));
+      checkPatchActivation(false).catch(err => console.error(err));
     }
   }, [gameMetadata])
   
@@ -347,7 +379,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Label className="text-sm font-medium">{`${t("Patch Activated")}`}</Label>
+              <Label className="text-sm font-medium">{`${t("Patch Activation")}`}</Label>
               {
                 !isPatchActivated ?
                   <Badge className={"bg-green-500"}>{t("Activated")}</Badge> :

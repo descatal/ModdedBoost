@@ -2,6 +2,7 @@
   "mirrorGroups": [
     {
       "name": "normal",
+      "testUrl": "https://google.com",
       "remotes": [
         {
           "name": "Google Drive",
@@ -11,8 +12,10 @@
     },
     {
       "name": "china",
+      "testUrl": "https://qiniu.com",
       "remotes": [
         {
+          "testUrl": "qiniu.com",
           "name": "Qiniu",
           "rcloneName": "qiniu"
         }

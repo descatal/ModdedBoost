@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/drawer.tsx";
 import IconButton from "@/components/common/icon-button.tsx";
 import {loadMetadata, ModFiles} from "@/lib/metadata.ts";
-import {MirrorGroupToggle} from "@/components/common/title-bar/mirror-group-toggle.tsx";
+import {MirrorGroupSelector} from "@/components/common/title-bar/mirror-group-selector.tsx";
 import {useAppStore} from "@/lib/store/app.ts";
 import {toast} from "sonner";
 import i18n from "i18next";
@@ -74,7 +74,7 @@ const FilesDialog = ({gameId, modVersion, files, triggerContent}: FileDialogsPro
             {t("Mod Version")}: {modVersion}
           </DrawerDescription>
           <div className="flex gap-1 justify-end">
-            <MirrorGroupToggle buttonVariant={"outline"} breakpoint={"none"}/>
+            <MirrorGroupSelector buttonVariant={"outline"} breakpoint={"none"}/>
             <IconButton
               isLoading={isCheckingUpdates}
               buttonDescription={t("Check for updates")}

@@ -11,6 +11,7 @@ use crate::rpcs3::{validate_rpcs3_executable, check_rpcs3_running};
 use crate::initialize::{initialize, check_initialized};
 use crate::app_initialize::{initialize_resources};
 use crate::patches::{check_patch_activated, activate_patch};
+use crate::request::{get_is_success};
 use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 mod os;
@@ -28,6 +29,7 @@ mod initialize;
 mod rpcs3;
 mod app_initialize;
 mod patches;
+mod request;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -72,7 +74,8 @@ pub fn run() {
             pack_psarc_command,
             initialize_resources,
             check_patch_activated,
-            activate_patch
+            activate_patch,
+            get_is_success
         ])
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_store::Builder::default().build())

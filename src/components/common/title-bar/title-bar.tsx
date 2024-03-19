@@ -8,7 +8,7 @@ import TitleBarButtons from "@/components/common/title-bar/title-bar-buttons.tsx
 import {VscChromeClose, VscChromeMaximize, VscChromeMinimize, VscChromeRestore} from "react-icons/vsc";
 import {getCurrent} from "@tauri-apps/api/window";
 import {useTranslation} from "react-i18next";
-import {MirrorGroupToggle} from "@/components/common/title-bar/mirror-group-toggle.tsx";
+import {MirrorGroupSelector} from "@/components/common/title-bar/mirror-group-selector.tsx";
 import {check} from "@tauri-apps/plugin-updater";
 import {useAppStore} from "@/lib/store/app.ts";
 import {toast} from "sonner";
@@ -26,7 +26,7 @@ const TitleBar = () => {
   }, []);
 
   useEffect(() => {
-    updateIsWindowMaximized();
+    updateIsWindowMaximized().catch(err => console.error(err));
 
     let unlisten: UnlistenFn;
     const listen = async () => {
@@ -39,12 +39,12 @@ const TitleBar = () => {
     return () => unlisten && unlisten();
   }, []);
 
-  const checkUpdate = async () => {
+  const checkUpdate = async (showToast: boolean) => {
     setIsChecking(true)
     const checkResult = await check();
     if (checkResult && checkResult.available) {
       setOpenUpdateModal(checkResult)
-    } else {
+    } else if (showToast) {
       toast.info(i18n.t("No updates found!"));
     }
     setIsChecking(false)
@@ -52,10 +52,10 @@ const TitleBar = () => {
   
   useEffect(() => {
     const timedCheck = setInterval(async () => {
-      await checkUpdate();
+      await checkUpdate(false);
     }, 3600000); // redo check every 1 hour
     
-    checkUpdate().catch(console.error)
+    checkUpdate(false).catch(console.error)
     
     return () => clearInterval(timedCheck);  
   }, [])
@@ -70,11 +70,11 @@ const TitleBar = () => {
             buttonDescription={t("Update")}
             tooltipContent={t("Check for launcher updates")}
             buttonIcon={<UpdateIcon className={"transition-all"}/>}
-            onClick={async () => {await checkUpdate()}}
+            onClick={async () => {await checkUpdate(true)}}
             breakpoint={"md"}
             isLoading={isChecking}
           />
-          <MirrorGroupToggle/>
+          <MirrorGroupSelector/>
           <LanguageToggle/>
           <ModeToggle/>
         </div>

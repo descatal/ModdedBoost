@@ -29,6 +29,9 @@ export interface AppProps {
   openInvalidPathModal: boolean;
   setOpenInvalidPathModal: (open: boolean) => void;
 
+  openInvalidRapFileModal: boolean;
+  setOpenInvalidRapFileModal: (open: boolean) => void;
+
   isModFilesOutdated: boolean;
   setIsModFilesOutdated: (open: boolean) => void;
   
@@ -75,6 +78,11 @@ export const useAppStore = createWithEqualityFn<AppProps>()((set) => ({
   openInvalidPathModal: false,
   setOpenInvalidPathModal(open) {
     set({openInvalidPathModal: open})
+  },
+
+  openInvalidRapFileModal: false,
+  setOpenInvalidRapFileModal(open) {
+    set({openInvalidRapFileModal: open})
   },
 
   isModFilesOutdated: false,

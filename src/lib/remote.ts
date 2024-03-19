@@ -28,7 +28,7 @@ export async function updateMetadata(fetchRemote: boolean) {
   if (fetchRemote) {
     const remotePath = await resolveResource('resources/remote.json')
     const remote: Remote = JSON.parse(await readTextFile(remotePath))
-    const metadataJson = await fetch(remote.metadata, {cache: "no-cache"}).then((res) => res.json()).catch(error)
+    const metadataJson = await fetch(remote.metadata, {cache: "no-cache"}).then((res) => res.json()).catch(err => console.error(err))
     await writeTextFile(metadataPath, JSON.stringify(metadataJson));
   }
 }
@@ -50,7 +50,7 @@ export async function updateMirrors(fetchRemote: boolean) {
   if (fetchRemote) {
     const remotePath = await resolveResource('resources/remote.json')
     const remote: Remote = JSON.parse(await readTextFile(remotePath))
-    const metadataJson = await fetch(remote.mirrors, {cache: "no-cache"}).then((res) => res.json()).catch(error)
+    const metadataJson = await fetch(remote.mirrors, {cache: "no-cache"}).then((res) => res.json()).catch(err => console.error(err))
     await writeTextFile(mirrorsPath, JSON.stringify(metadataJson));
   }
 }
