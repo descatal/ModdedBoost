@@ -34,6 +34,7 @@ export const copyFileCommand = async (path: string, remotePath: string, remote: 
 }
 
 export const syncPsarcCommand = async (path: string, remotePath: string, remote: string) => {
+  console.debug(path)
   const {rpcs3Path} = useConfigStore.getState()
 
   const rpcs3Directory = await dirname(rpcs3Path);

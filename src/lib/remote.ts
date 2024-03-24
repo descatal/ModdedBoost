@@ -1,7 +1,6 @@
 import {appConfigDir, join, resolveResource} from "@tauri-apps/api/path";
 import {readTextFile, writeTextFile} from "@tauri-apps/plugin-fs";
 import {invoke} from "@tauri-apps/api/core";
-import {error} from "@tauri-apps/plugin-log";
 import {Mirrors} from "@/lib/mirrors.ts";
 import {Metadata} from "@/lib/metadata.ts";
 

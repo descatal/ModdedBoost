@@ -394,7 +394,9 @@ function GameTabs({gameId, metadata}: ConfigProps) {
                     buttonVariant={"outline"}
                     buttonDescription={t("Recheck")}
                     buttonIcon={<UpdateIcon/>}
-                    onClick={checkPatchActivation}
+                    onClick={async () => {
+                      await checkPatchActivation(true)
+                    }}
                     isLoading={isCheckingPatchActivation}/> :
                   <IconButton
                     tooltipContent={t("Activate patch")}
