@@ -8,47 +8,61 @@ import {
 } from "@/components/ui/alert-dialog.tsx";
 import {useTranslation} from "react-i18next";
 import {useAppStore} from "@/lib/store/app.ts";
-import {useState} from "react";
-import {relaunch} from "@tauri-apps/plugin-process";
-import IconButton from "@/components/common/icon-button.tsx";
-import {UpdateIcon} from "@radix-ui/react-icons";
-import {info} from "@tauri-apps/plugin-log";
+import {Button} from "@/components/ui/button.tsx";
 
 function UpdateModal() {
   const {t} = useTranslation();
-  const {openUpdateModal, updateInfo} = useAppStore()
-  const [isUpdating, setIsUpdating] = useState(false)
-
+  const {openUpdateModal, setOpenUpdateModal, updateInfo} = useAppStore()
+  // const [isUpdating, setIsUpdating] = useState(false)
+  
   return (
     <AlertDialog open={openUpdateModal}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>✨ {t("New Update Available!")}</AlertDialogTitle>
           <AlertDialogDescription>
-            🚀 {t("A new version of launcher is available!")} <br/> 
-            {t("Please click on the Update button to begin the update process.")}
+            🚀 {t("A new version of launcher is available!")} <br/>
+            {t("Please download and install the updater from the link below.")} <br/>
+            {t("Current version")}: {updateInfo?.currentVersion} <br/>
+            {t("New version")}: {updateInfo?.version}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <IconButton
-            isLoading={isUpdating}
-            buttonVariant={"default"}
-            buttonDescription={t("Update")}
-            buttonIcon={<UpdateIcon/>}
-            onClick={async () => {
-              setIsUpdating(true)
-              if (updateInfo) {
-                await info("Updating application")
-                await updateInfo.downloadAndInstall();
-                await relaunch();
-              }
-              setIsUpdating(false)
-            }}>
-          </IconButton>
+          <div className={"flex space-x-2"}>
+            <Button
+              variant={"outline"}
+              onClick={() => {
+                setOpenUpdateModal(null)
+              }}>
+              {t("Cancel")}
+            </Button>
+            <Button asChild>
+              <a
+                href="https://github.com/descatal/ModdedBoost/releases/latest" target="_blank">
+                {t("Update")}
+              </a>
+            </Button>
+          </div>
+
+          {/*<IconButton*/}
+          {/*  isLoading={isUpdating}*/}
+          {/*  buttonVariant={"default"}*/}
+          {/*  buttonDescription={t("Update")}*/}
+          {/*  buttonIcon={<UpdateIcon/>}*/}
+          {/*  onClick={async () => {*/}
+          {/*    //setIsUpdating(true)*/}
+          {/*    if (updateInfo) {*/}
+          {/*      // await info("Updating application")*/}
+          {/*      // await updateInfo.downloadAndInstall();*/}
+          {/*      // await relaunch();*/}
+          {/*    }*/}
+          {/*    //setIsUpdating(false)*/}
+          {/*  }}>*/}
+          {/*</IconButton>*/}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  );
+);
 }
 
 export default UpdateModal;

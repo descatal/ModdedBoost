@@ -74,7 +74,7 @@
   "No updates found!": "No updates found!",
   "New Update Available!": "New Update Available!",
   "A new version of launcher is available!": "A new version of launcher is available.",
-  "Please click on the Update button to begin the update process.": "Please click on the Update button to begin the update process.",
+  "Please download and install the updater from the link below.": "Please download and install the updater from the link below.",
   "Path not supported": "Path not supported",
   "Path containing Chinese / Japanese characters are not supported!": "Path containing Chinese / Japanese characters are not supported!",
   "Not Found": "Not Found",
@@ -93,5 +93,7 @@
   "Invalid RAP file": "Invalid RAP file",
   "A valid RAP file is required to launch the game.": "A valid RAP file is required to launch the game.",
   "Please place your RAP file in 'dev_hdd0/home/00000001/exdata'": "Please place your RAP file in 'dev_hdd0/home/00000001/exdata'",
-  "More information": "More information"
+  "More information": "More information",
+  "Current version": "Current version",
+  "New version": "New version"
 }

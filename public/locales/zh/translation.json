@@ -74,7 +74,7 @@
   "No updates found!": "暂无更新!",
   "New Update Available!": "新版启动器",
   "A new version of launcher is available!": "检测到新版启动器",
-  "Please click on the Update button to begin the update process.": "请按下更新按钮开始更新",
+  "Please download and install the updater from the link below.": "请按下更新按钮下载安装新版启动器",
   "Path not supported": "路径错误",
   "Path containing Chinese / Japanese characters are not supported!": "RPCS3 路径不可以含有中文 / 日文字母！请更改后重试。",
   "Not Found": "未找到文件",
@@ -93,5 +93,7 @@
   "Invalid RAP file": "无效 RAP 文件",
   "A valid RAP file is required to launch the game.": "游戏启动需要一个有效的 RAP 文件",
   "Please place your RAP file in 'dev_hdd0/home/00000001/exdata'": "请把有效的 RAP 文件放入 'dev_hdd0/home/00000001/exdata'",
-  "More information": "详情"
+  "More information": "详情",
+  "Current version": "现版本",
+  "New version": "新版本"
 }
