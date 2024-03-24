@@ -7,6 +7,7 @@ use tokio::fs::{File, OpenOptions};
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 
 #[derive(Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "PascalCase")]
 pub struct GameVersion {
     #[serde(alias="enabled", alias="Enabled")]
     enabled: bool,
@@ -79,7 +80,10 @@ pub async fn activate_patch(
     patch_path: &str,
 ) -> Result<bool, ()> {
     let path: &Path = Path::new(&patch_path);
-    if !path.exists() { return Ok(false) }
+    if !path.exists() { 
+        // Create an empty file
+        std::fs::File::create(path).expect("create failed");
+    }
 
     let mut file = OpenOptions::new()
         .read(true)
