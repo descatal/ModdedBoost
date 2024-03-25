@@ -9,6 +9,17 @@
           "rcloneName": "googledrive"
         }
       ]
+    },
+    {
+      "name": "china",
+      "testUrl": "https://qiniu.com",
+      "remotes": [
+        {
+          "testUrl": "qiniu.com",
+          "name": "Qiniu",
+          "rcloneName": "qiniu"
+        }
+      ]
     }
   ]
 }
