@@ -7,12 +7,7 @@ A rpcs3 game launching / configuration UI for the Modded Boost mod.
 
 ## How to run
 
-- [Download](https://nightly.link/descatal/ModdedBoost/workflows/build/main/artifacts.zip) the latest build artifact
-  and run the executable.
-
-## How to build
-
-`pnpm tauri dev`
+- [Download](https://github.com/descatal/ModdedBoost/releases/latest) and run the latest release binary executable.
 
 ## Credits
 
