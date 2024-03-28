@@ -27,7 +27,7 @@ export const copyFileCommand = async (path: string, remotePath: string, remote: 
     remote: `${remote}`,
     remotePath: `${remote}:/${remotePath}`,
     targetPath: path,
-    additionalFlags: "--verbose --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 --stats 1s --stats-file-name-length 0 --fast-list",
+    additionalFlags: "--no-update-modtime --verbose --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 --stats 1s --stats-file-name-length 0 --fast-list",
     excludeItems: [],
     listenerId: "copy_file"
   });

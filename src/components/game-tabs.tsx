@@ -162,6 +162,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
     const runCommand = async () => {
       const patchFileMd5 = await invoke<LocalFileMetadata[]>("get_file_metadata_command", {
         filePaths: [gameMetadata!.base.patchPath],
+        ignoreModtime: false
       });
       if (!(patchFileMd5[0]?.checksum ?? "" === gameMetadata!.base.patchMd5))
         return false;
@@ -187,6 +188,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
     const runCommand = async (remote: string) => {
       const patchFileMd5 = await invoke<LocalFileMetadata[]>("get_file_metadata_command", {
         filePaths: [gameMetadata!.base.patchPath],
+        ignoreModtime: false
       });
       if (!(patchFileMd5[0]?.checksum ?? "" === gameMetadata!.base.patchMd5)) {
         const copySuccessful = await copyFileCommand(gameMetadata!.base.patchPath, gameMetadata!.base.patchRemotePath, remote)

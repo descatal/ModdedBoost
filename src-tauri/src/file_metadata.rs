@@ -32,6 +32,7 @@ pub async fn clear_cached_metadata(
 pub async fn get_cached_metadata(
     app: &AppHandle,
     file_paths: Vec<String>,
+    ignore_modtime: bool,
 ) -> Result<(Vec<FileMetadata>), ()> {
     println!("Getting cached local file metadata");
 
@@ -53,7 +54,7 @@ pub async fn get_cached_metadata(
     let mut result: Vec<FileMetadata> = Vec::new();
     for file_path in file_paths {
         let path: &Path = Path::new(&file_path);
-        if !path.exists() {
+        if (!path.is_file() || !path.exists()) {
             continue;
         }
         
@@ -62,7 +63,7 @@ pub async fn get_cached_metadata(
         match into_iter.find(|file_metadata| file_metadata.path == *file_path) {
             Some(mut file) => {
                 let cache_last_modified = file.last_modified;
-                if cache_last_modified < file_last_modified {
+                if (ignore_modtime || cache_last_modified != file_last_modified) {
                     file.checksum = get_checksum(&file_path).await;
                     file.last_modified = file_last_modified.clone();
                     // Update the item in the cache

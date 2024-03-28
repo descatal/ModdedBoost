@@ -22,8 +22,9 @@ pub async fn rclone_command(
 pub async fn get_file_metadata_command(
     app: AppHandle,
     file_paths: Vec<String>,
+    ignore_modtime: bool,
 ) -> Result<(Vec<FileMetadata>), ()> {
-    get_cached_metadata(&app, file_paths).await
+    get_cached_metadata(&app, file_paths, ignore_modtime).await
 }
 
 #[tauri::command]

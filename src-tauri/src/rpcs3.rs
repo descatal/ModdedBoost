@@ -2,6 +2,7 @@ use sysinfo::System;
 use std::path::{Path};
 use async_process::Command;
 use same_file::is_same_file;
+use tauri::utils::platform::current_exe;
 
 use crate::os::{get_os, OS};
 
@@ -12,9 +13,11 @@ use crate::os::{get_os, OS};
 pub async fn validate_rpcs3_executable(
     full_path: &str
 ) -> Result<bool, ()> {
+    let exe_path = current_exe().unwrap();
     let rpcs3_path = Path::new(full_path);
-
-    if !rpcs3_path.exists() {
+    
+    // Check if rpcs3_path is the same as exe_path
+    if (!rpcs3_path.exists() || is_same_file(&rpcs3_path, &exe_path).unwrap_or(false)) {
         return Ok(false)
     }
 
