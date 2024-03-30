@@ -34,7 +34,7 @@ pub async fn rclone(
     let rclone_conf_path = app.path()
         .resolve("tools/rclone.conf", BaseDirectory::AppData)
         .expect("failed to resolve resource");
-    
+
     let exclusion_list_path = app.path()
         .resolve("exclude_files.txt", BaseDirectory::Temp)
         .unwrap();
@@ -75,7 +75,7 @@ pub async fn rclone(
     let arg_pairs: Vec<&str> = additional_flags.split("--").collect();
 
     let mut cmd = Command::new(rclone_path);
-    
+
     cmd.arg(command)
         .arg("--progress")
         .arg("--exclude-from")
@@ -96,7 +96,7 @@ pub async fn rclone(
         .arg(format!("{}", target_path));
 
     println!("{}", format!("{:?}", cmd).replace("\"", ""));
-    
+
     // Specify that we want the command's standard output piped back to us.
     // By default, standard input/output/error will be inherited from the
     // current process (for example, this means that standard input will
@@ -124,15 +124,15 @@ pub async fn rclone(
     let mut execution_success = true;
     let event_name = format!("rclone_{}", listener_id).to_string();
     app.emit(&event_name, "start").expect("failed to emit progress!");
-    while let Some(line) = reader.next_line().await.expect("") {
+    while let Some(line) = reader.next_line().await.unwrap_or(Some(String::new())) {
         app.emit(&event_name, format!("\r{}", line)).expect("failed to emit progress!");
         println!("\r{}", line);
-        
-        if line.to_lowercase().contains("errors:") { 
+
+        if line.to_lowercase().contains("errors:") {
             execution_success = false
         }
     }
     app.emit(&event_name, "end").expect("failed to emit progress!");
-    
+
     Ok(execution_success)
 }

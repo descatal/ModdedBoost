@@ -25,7 +25,7 @@ pub async fn check_initialized(
         "patch_05_00",
         "patch_06_00",
     ];
-    
+
     for expected_folder in required_folders {
         let relative_path = RelativePath::new(expected_folder);
         let expected_path = relative_path.to_path(&cache_path_str);
@@ -99,6 +99,8 @@ pub async fn initialize(
             } else {
                 patches_path.insert(file_name, bljs_path.clone());
             }
+        } else {
+            patches_path.insert(file_name, bljs_path.clone());
         }
     }
 
@@ -107,11 +109,11 @@ pub async fn initialize(
         let extract_file_stem = extract_file_name_path.file_stem().unwrap().to_str().unwrap();
         let extract_directory = cache_path.join(extract_file_stem).to_str().unwrap().to_owned();
         create_dir_all(&extract_directory.clone()).unwrap();
-        
+
         if patches_path.contains_key(extract_file_name) {
             let path = patches_path.get(extract_file_name).unwrap();
             unpack_psarc(&app, &path, &extract_directory.clone()).await.unwrap();
-        } 
+        }
     }
 
     Ok(())
