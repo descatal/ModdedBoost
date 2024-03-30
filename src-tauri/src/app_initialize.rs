@@ -16,8 +16,7 @@ pub fn initialize_resources(
 
     // Copy recursively, only including certain files:
     CopyBuilder::new(resources_path, appdata_path)
-        .overwrite_if_newer(true)
-        .overwrite_if_size_differs(true)
+        .overwrite(true)
         .with_exclude_filter("icon.ico")
         .run()
         .expect("dir copy failed");

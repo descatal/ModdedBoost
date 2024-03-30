@@ -25,12 +25,13 @@ pub async fn check_initialized(
         "patch_05_00",
         "patch_06_00",
     ];
-
+    
     for expected_folder in required_folders {
         let relative_path = RelativePath::new(expected_folder);
         let expected_path = relative_path.to_path(&cache_path_str);
-        
-        if !Path::exists(&expected_path) {
+
+        // Checks if the folder path exists, and if there's a file called PATCH.TBL in the folder.
+        if !Path::exists(&expected_path) || !Path::exists(&expected_path.join("PATCH.TBL")) {
             return Ok(false)
         }
     }
