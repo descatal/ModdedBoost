@@ -45,6 +45,7 @@ configparser = "3.0.4"
 sysinfo = "0.30.5"
 same-file = "1.0.6"
 dircpy = "0.3.16"
+fix_float = { version = "0.1.4", features = ["serde"] } 
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

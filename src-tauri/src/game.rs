@@ -8,8 +8,8 @@ pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
     //find the game path first
     //if gameType is npjb then npjb00512, else bljs10250
     let game_type_path: &str = match game_type {
-        "npjb" => r"npjb00512\usrdir\eboot.bin",
-        "bljs" => r"BLJS10250\usrdir\eboot.bin",
+        "npjb" => r"NPJB00512\USRDIR\EBOOT.bin",
+        "bljs" => r"BLJS10250\USRDIR\EBOOT.bin",
         _ => "",
     };
     

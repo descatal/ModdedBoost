@@ -53,7 +53,7 @@ const TitleBar = () => {
   useEffect(() => {
     const timedCheck = setInterval(async () => {
       await checkUpdate(false);
-    }, 3600000); // redo check every 1 hour
+    }, 86400000); // redo check every day
     
     checkUpdate(false).catch(console.error)
     

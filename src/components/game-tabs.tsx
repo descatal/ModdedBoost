@@ -109,8 +109,23 @@ function GameTabs({gameId, metadata}: ConfigProps) {
         excludeItems: [],
         listenerId: "check_base_folder_dlc"
       });
-      
-      return isSync && isDlcSync;
+
+      if (gameId === "BLJS10250") {
+        // For BLJS we will sync the base folder of NPJB00512 so that DLC works.
+        const isNPJBDlcSynced = await invoke<boolean>("rclone_command", {
+          command: "check",
+          remote: `${remote}`,
+          remotePath: `${remote}:/${gameMetadata!.base.dlcNPJBRemoteBasePath}`,
+          targetPath: gameMetadata!.base.dlcNPJBBasePath,
+          additionalFlags: "--fast-list",
+          excludeItems: gameMetadata!.base.excludePaths,
+          listenerId: "check_base_dlc_npjb_folder"
+        });
+
+        return isSync && isDlcSync && isNPJBDlcSynced
+      } else {
+        return isSync && isDlcSync;
+      }
     }
 
     await runProcessCommand(
@@ -145,7 +160,22 @@ function GameTabs({gameId, metadata}: ConfigProps) {
         listenerId: "sync_base_folder"
       });
       
-      return syncBaseSuccessful && syncDlcSuccessful
+      if (gameId === "BLJS10250") {
+        // For BLJS we will sync the base folder of NPJB00512 so that DLC works.
+        const syncNPJBSuccessful = await invoke<boolean>("rclone_command", {
+          command: "sync",
+          remote: `${remote}`,
+          remotePath: `${remote}:/${gameMetadata!.base.dlcNPJBRemoteBasePath}`,
+          targetPath: gameMetadata!.base.dlcNPJBBasePath,
+          additionalFlags: "--delete-during --ignore-size --verbose --transfers 4 --checkers 8 --contimeout 60s --timeout 300s --retries 3 --low-level-retries 10 --stats 1s --stats-file-name-length 0 --fast-list",
+          excludeItems: gameMetadata!.base.excludePaths,
+          listenerId: "sync_base_dlc_npjb_folder"
+        });
+        
+        return syncBaseSuccessful && syncDlcSuccessful && syncNPJBSuccessful
+      } else {
+        return syncBaseSuccessful && syncDlcSuccessful
+      }
     }
 
     await runProcessCommand(
@@ -169,9 +199,11 @@ function GameTabs({gameId, metadata}: ConfigProps) {
 
       const rpcs3Dir = await dirname(rpcs3Path)
       const patchConfigPath = await join(rpcs3Dir, "config", "patch_config.yml");
-      return await invoke<boolean>("check_patch_activated", {
+      const patchActivated = await invoke<boolean>("check_patch_activated", {
         patchPath: patchConfigPath
       });
+      
+      return patchActivated
     }
 
     await runProcessCommand(
@@ -201,8 +233,19 @@ function GameTabs({gameId, metadata}: ConfigProps) {
         patchPath: patchConfigPath
       });
       
+      const activationError =
+        <div className={"flex-col"}>
+          {t("Activation failed. Please activate the patch manually by following this guide: ")} <br/> <br/>
+          <a href="https://moddedboost.github.io/docs/support/activate_patch"
+             className={"text-primary underline underline-offset-4"}
+             target="_blank"
+          >
+            {"moddedboost.github.io/docs/support/activate_patch"}
+          </a>
+        </div>
+
       if (!activationResult)
-        toast.error(i18n.t("Activation failed. Please check config/patch_config.yml format."))
+        toast.error(activationError)
       
       return activationResult
     }
@@ -234,9 +277,10 @@ function GameTabs({gameId, metadata}: ConfigProps) {
         loadingToastId = toast.loading(loadingToastText);
       }
       
+      let commandResult = false
       try {
         await addOrUpdateProcess({...process, status: "Started"})
-        const commandResult = await command(item.rcloneName)
+        commandResult = await command(item.rcloneName)
         if (commandResult) {
           await stateActionOnSuccess(gameId, new Date().getTime())
         }
@@ -247,7 +291,9 @@ function GameTabs({gameId, metadata}: ConfigProps) {
       } finally {
         if (showToast) {
           toast.dismiss(loadingToastId)
-          toast.success(finishedToastText);
+          if (commandResult) {
+            toast.success(finishedToastText);
+          }
         }
         await addOrUpdateProcess({...process, status: "Finished"})
       }
@@ -273,7 +319,7 @@ function GameTabs({gameId, metadata}: ConfigProps) {
     if (gameMetadata) {
       const lastCheckedTime = baseFolderLastChecked.find(item => item.gameId === gameId)
       const currentTime = new Date().getTime();
-      const thresholdMs = 60 * 60 * 1000;
+      const thresholdMs = 24 * 60 * 60 * 1000;
       if (!lastCheckedTime || (currentTime - lastCheckedTime.timestamp) > thresholdMs) {
         // Only execute check if the last check is 1 hour or more
         checkBaseFolder().catch(err => console.error(err));

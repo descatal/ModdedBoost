@@ -48,7 +48,7 @@ pub async fn check_game_versions(
         OS::Macos => String::from("~/Library/Application Support/rpcs3")
     };
 
-    let dev_hdd0_relative_path = RelativePath::new("dev_hdd0");
+    let dev_hdd0_relative_path = RelativePath::new("dev_hdd0/game");
     let game_directory_string = dev_hdd0_relative_path.to_path(&rpcs3_directory).display().to_string();
     let game_directory = &game_directory_string;
     
@@ -56,13 +56,25 @@ pub async fn check_game_versions(
     // rpcs3 checks all of the param.sfo directories under "dev_hdd0/game", 
     // NPJB00512 is the default folder that the game is installed in
     // TODO: Use https://github.com/hippie68/sfo to read the param.sfo's game metadata instead of checking directory only
-    let npjb_relative_path = RelativePath::new("npjb00512/param.sfo");
-    let npjb_directory = npjb_relative_path.to_path("").display().to_string();
-    let npjb_sfo_paths = get_file_system_entries(game_directory, Some(&npjb_directory));
+    let npjb_param_sfo_relative_path = RelativePath::new("npjb00512/param.sfo");
+    let npjb_eboot_relative_path = RelativePath::new("npjb00512/usrdir/eboot.bin");
+    let npjb_sfo_directory = npjb_param_sfo_relative_path.to_path("").display().to_string();
+    let npjb_eboot_relative_path = npjb_eboot_relative_path.to_path("").display().to_string();
+    let npjb_sfo_paths = get_file_system_entries(game_directory, Some(&npjb_sfo_directory));
+    let npjb_eboot_paths = get_file_system_entries(game_directory, Some(&npjb_eboot_relative_path));
+    let mut sfo_exists = false;
+    let mut eboot_exists = false;
     if let Some(_first_item) = npjb_sfo_paths.first() {
-        fullboost_versions.NPJB00512 = true;
+        sfo_exists = true;
+    }
+    if let Some(_first_item) = npjb_eboot_paths.first() {
+        eboot_exists = true;
     }
 
+    if sfo_exists && eboot_exists {
+        fullboost_versions.NPJB00512 = true;
+    }
+    
     // Check if NPJB00512 game version (Disc) exist
     // For disc version since it might be possible the game was never installed (loaded from disc directly), 
     // BLJS directory under "dev_hdd0/game/" might not exist. 
@@ -76,7 +88,11 @@ pub async fn check_game_versions(
 
         // Try to check if there's any key with 'BLJS10250'
         if let Some(_value) = yaml_map.get("BLJS10250") {
-            fullboost_versions.BLJS10250 = true;
+            let bljs_game_path = Path::new(_value);
+            let bljs_param_sfo_path = bljs_game_path.join("PS3_GAME").join("PARAM.sfo");
+            if Path::exists(&bljs_param_sfo_path) {
+                fullboost_versions.BLJS10250 = true;
+            }
         }
     }
 

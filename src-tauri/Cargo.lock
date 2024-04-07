@@ -952,6 +952,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "doc-comment"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
+
+[[package]]
 name = "downcast-rs"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1192,6 +1198,16 @@ dependencies = [
  "libc",
  "redox_syscall",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "fix_float"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "397e02f8b8599c876f511508693a428b44ee1b9e103873c7076f09f581b3caa9"
+dependencies = [
+ "doc-comment",
+ "serde",
 ]
 
 [[package]]
@@ -2454,6 +2470,7 @@ dependencies = [
  "async-process",
  "configparser",
  "dircpy",
+ "fix_float",
  "futures-util",
  "log",
  "md5",

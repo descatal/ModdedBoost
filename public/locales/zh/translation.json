@@ -89,7 +89,7 @@
   "Patch file activation status check complete.": "补丁激活状态检测完毕",
   "Activating patch...": "激活补丁中。。。",
   "Patch file activation complete.": "补丁激活完毕",
-  "Activation failed. Please check config/patch_config.yml format.": "补丁激活失败，请检测 config/patch_config.yml 是否是一个正确yaml的格式",
+  "Activation failed. Please activate the patch manually by following this guide: ": "补丁激活失败，请手动激活： ",
   "Invalid RAP file": "无效 RAP 文件",
   "A valid RAP file is required to launch the game.": "游戏启动需要一个有效的 RAP 文件",
   "Please place your RAP file in 'dev_hdd0/home/00000001/exdata'": "请把有效的 RAP 文件放入 'dev_hdd0/home/00000001/exdata'",

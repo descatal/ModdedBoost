@@ -3,7 +3,7 @@ use std::fs::{create_dir_all, metadata};
 use std::path::Path;
 
 use relative_path::RelativePath;
-use tauri::AppHandle;
+use tauri::{App, AppHandle};
 
 use crate::file_handler::get_file_system_entries;
 use crate::psarc::unpack_psarc;
@@ -15,6 +15,11 @@ pub async fn check_initialized(
 ) -> Result<bool, ()> {
     let rpcs3_path = Path::new(full_path);
     let rpcs3_directory = rpcs3_path.parent().unwrap();
+
+    let dev_hdd0_relative_path = RelativePath::new("dev_hdd0");
+    let game_directory_string = dev_hdd0_relative_path.to_path(&rpcs3_directory).display().to_string();
+    let game_directory = &game_directory_string;
+    
     let cache_path_str = rpcs3_directory.join(".moddedboost").join("psarc");
 
     let required_folders = vec![
@@ -26,12 +31,23 @@ pub async fn check_initialized(
         "patch_06_00",
     ];
 
+    // Append a .psarc to the items in required_folders 
+    // Needs to be in Vec<&str>
+    let psarc_files = required_folders
+        .iter()
+        .map(|folder| format!("{}.psarc", folder))
+        .collect::<Vec<String>>();
+
+    let str_slices: Vec<&str> = psarc_files.iter().map(AsRef::as_ref).collect();
+
+    let patches_path = get_game_files(game_directory, str_slices.clone());
+
     for expected_folder in required_folders {
         let relative_path = RelativePath::new(expected_folder);
         let expected_path = relative_path.to_path(&cache_path_str);
 
-        // Checks if the folder path exists, and if there's a file called PATCH.TBL in the folder.
-        if !Path::exists(&expected_path) || !Path::exists(&expected_path.join("PATCH.TBL")) {
+        // Checks if the folder path exists, and if there's a file called PATCH.TBL in the folder if there's an corresponding psarc file in either BLJS or NPJB folders
+        if !Path::exists(&expected_path) || (patches_path.contains_key(format!("{}.psarc", expected_folder).as_str()) && !Path::exists(&expected_path.join("PATCH.TBL"))) {
             return Ok(false)
         }
     }
@@ -73,8 +89,29 @@ pub async fn initialize(
         "patch_06_00.psarc",
     ];
 
-    let npjb_files: Vec<String> = get_extract_files(game_directory, "npjb00512/usrdir", files_to_extract.clone());
-    let bljs_files: Vec<String> = get_extract_files(game_directory, "bljs10250/usrdir", files_to_extract.clone());
+    let patches_path = get_game_files(game_directory, files_to_extract.clone());
+
+    for extract_file_name in files_to_extract {
+        let extract_file_name_path = Path::new(extract_file_name);
+        let extract_file_stem = extract_file_name_path.file_stem().unwrap().to_str().unwrap();
+        let extract_directory = cache_path.join(extract_file_stem).to_str().unwrap().to_owned();
+        create_dir_all(&extract_directory.clone()).unwrap();
+
+        if patches_path.contains_key(extract_file_name) {
+            let path = patches_path.get(extract_file_name).unwrap();
+            unpack_psarc(&app, &path, &extract_directory.clone()).await.unwrap();
+        }
+    }
+
+    Ok(())
+}
+
+fn get_game_files(
+    game_directory: &str,
+    file_names: Vec<&str>
+) -> HashMap<String, String> {
+    let npjb_files: Vec<String> = get_extract_files(game_directory, "npjb00512/usrdir", file_names.clone());
+    let bljs_files: Vec<String> = get_extract_files(game_directory, "bljs10250/usrdir", file_names.clone());
 
     let map: HashMap<String, String> = npjb_files.into_iter().filter_map(|s| {
         Path::new(&s).file_name().and_then(|os_str| os_str.to_str()).map(|file_name| (file_name.to_string(), s.clone()))
@@ -104,19 +141,7 @@ pub async fn initialize(
         }
     }
 
-    for extract_file_name in files_to_extract {
-        let extract_file_name_path = Path::new(extract_file_name);
-        let extract_file_stem = extract_file_name_path.file_stem().unwrap().to_str().unwrap();
-        let extract_directory = cache_path.join(extract_file_stem).to_str().unwrap().to_owned();
-        create_dir_all(&extract_directory.clone()).unwrap();
-
-        if patches_path.contains_key(extract_file_name) {
-            let path = patches_path.get(extract_file_name).unwrap();
-            unpack_psarc(&app, &path, &extract_directory.clone()).await.unwrap();
-        }
-    }
-
-    Ok(())
+    patches_path
 }
 
 fn get_extract_files(

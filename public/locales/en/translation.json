@@ -89,7 +89,7 @@
   "Patch file activation status check complete.": "Patch file activation status check complete.",
   "Activating patch...": "Activating patch...",
   "Patch file activation complete.": "Patch file activation complete.",
-  "Activation failed. Please check config/patch_config.yml format.": "Activation failed. Please check config/patch_config.yml format.",
+  "Activation failed. Please activate the patch manually by following this guide: ": "Activation failed. Please activate the patch manually by following this guide: ",
   "Invalid RAP file": "Invalid RAP file",
   "A valid RAP file is required to launch the game.": "A valid RAP file is required to launch the game.",
   "Please place your RAP file in 'dev_hdd0/home/00000001/exdata'": "Please place your RAP file in 'dev_hdd0/home/00000001/exdata'",

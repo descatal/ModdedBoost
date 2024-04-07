@@ -6,11 +6,22 @@ use tokio::fs;
 use tokio::fs::{File, OpenOptions};
 use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 
+// Define an untagged enum to handle both cases
+// # With the 'enabled' key
+// BLJS10250:
+//   All:
+//     Enabled: true
+// 
+// # Without the 'enabled' key
+// BLJS10250:
+//   All: true
 #[derive(Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "PascalCase")]
-pub struct GameVersion {
-    #[serde(alias="enabled", alias="Enabled")]
-    enabled: bool,
+#[serde(untagged)]
+pub enum GameVersion {
+    Bool(bool),
+    Struct {
+        Enabled: bool,
+    },
 }
 
 #[derive(Serialize, Deserialize, PartialEq)]
@@ -53,7 +64,7 @@ pub async fn check_patch_activated(
     
     match serde_parse { 
         Ok(serde_parse) => {
-            let new_entry: PpuSpu = serde_yaml::from_str(r#"
+            let entry_v1: PpuSpu = serde_yaml::from_str(r#"
                 AddUnitSupport:
                   Gundam Extreme Vs. Full Boost:
                     BLJS10250:
@@ -63,13 +74,28 @@ pub async fn check_patch_activated(
                       All:
                         Enabled: true
             "#).expect("huh");
+            
+            let entry_v2: PpuSpu = serde_yaml::from_str(r#"         
+              AddUnitSupport:
+                Gundam Extreme Vs. Full Boost:
+                  BLJS10250:
+                    All: true
+                  NPJB00512:
+                    All: true
+            "#).expect("huh");
 
             let ppu_spu_hash = "PPU-a787b532b03b2ebc3970a1d405639b05bec1a506";
             if let Some(existing_entry) = serde_parse.get(ppu_spu_hash) {
-                return Ok(existing_entry == &new_entry);
+                if existing_entry == &entry_v1 || existing_entry == &entry_v2 {
+                    return Ok(true);
+                }
             }
         }
-        Err(_) => return Ok(false)
+        Err(error) => { 
+            // Print the error
+            println!("{:?}", error);
+            return Ok(false); 
+        }
     } 
     
     Ok(false)
