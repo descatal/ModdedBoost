@@ -27,9 +27,9 @@ pub async fn check_game_versions(
     // Don't need to continue parsing if the specified executable is invalid
     let path: &Path = Path::new(full_path);
     if !path.exists() {
-        return Err(())
-    } 
-    
+        return Err(());
+    }
+
     let rpcs3_directory = match get_os() {
         OS::Windows => {
             match path.parent() {
@@ -37,21 +37,21 @@ pub async fn check_game_versions(
                 None => return Err(()),
             }
         }
-        OS::Linux => { 
+        OS::Linux => {
             let home_dir = app.path().home_dir().unwrap().as_path().display().to_string();
             let config_rpcs3_relative_path = RelativePath::new(".config/rpcs3");
             let path_buf = config_rpcs3_relative_path.to_path(&home_dir);
             let path_str = path_buf.to_str().unwrap();
             let path_string = path_str.to_string();
             path_string
-        },
+        }
         OS::Macos => String::from("~/Library/Application Support/rpcs3")
     };
 
-    let dev_hdd0_relative_path = RelativePath::new("dev_hdd0/game");
-    let game_directory_string = dev_hdd0_relative_path.to_path(&rpcs3_directory).display().to_string();
+    let dev_hdd0_game_relative_path = RelativePath::new("dev_hdd0/game");
+    let game_directory_string = dev_hdd0_game_relative_path.to_path(&rpcs3_directory).display().to_string();
     let game_directory = &game_directory_string;
-    
+
     // Check if NPJB00512 game version (Digital) exist
     // rpcs3 checks all of the param.sfo directories under "dev_hdd0/game", 
     // NPJB00512 is the default folder that the game is installed in
@@ -74,28 +74,40 @@ pub async fn check_game_versions(
     if sfo_exists && eboot_exists {
         fullboost_versions.NPJB00512 = true;
     }
-    
+
     // Check if NPJB00512 game version (Disc) exist
-    // For disc version since it might be possible the game was never installed (loaded from disc directly), 
-    // BLJS directory under "dev_hdd0/game/" might not exist. 
-    // rpcs3 uses games.yml to record down disc games like these.
-    let game_yml_paths = get_file_system_entries(&rpcs3_directory, Some(r"games.yml"));
-    if let Some(game_yaml_path) = game_yml_paths.first() {
-        let game_yaml_path = game_yaml_path.clone();
+    // BLJS could be installed in "dev_hdd0/disc" directory
+    let dev_hdd0_disc_relative_path = RelativePath::new("dev_hdd0/disc");
+    let disc_directory_string = dev_hdd0_disc_relative_path.to_path(&rpcs3_directory).display().to_string();
+    let disc_directory = &disc_directory_string;
 
-        let yaml_file = File::open(game_yaml_path).unwrap();
-        let yaml_map: HashMap<String, String> = serde_yaml::from_reader(yaml_file).unwrap();
+    let bljs_disc_game_path = Path::new(disc_directory);
+    let bljs_disc_param_sfo_path = bljs_disc_game_path.join("PS3_GAME").join("PARAM.sfo");
+    if Path::exists(&bljs_disc_param_sfo_path) {
+        fullboost_versions.BLJS10250 = true;
+    } else {
+        // It might be possible the game was never installed (loaded from disc directly), 
+        // BLJS directory under "dev_hdd0/game/" or "dev_hdd0/disc" might not exist
+        // rpcs3 uses games.yml to record down disc games like these
+        let game_yml_paths = get_file_system_entries(&rpcs3_directory, Some(r"games.yml"));
+        if let Some(game_yaml_path) = game_yml_paths.first() {
+            let game_yaml_path = game_yaml_path.clone();
 
-        // Try to check if there's any key with 'BLJS10250'
-        if let Some(_value) = yaml_map.get("BLJS10250") {
-            let bljs_game_path = Path::new(_value);
-            let bljs_param_sfo_path = bljs_game_path.join("PS3_GAME").join("PARAM.sfo");
-            if Path::exists(&bljs_param_sfo_path) {
-                fullboost_versions.BLJS10250 = true;
+            let yaml_file = File::open(game_yaml_path).unwrap();
+            let yaml_map: HashMap<String, String> = serde_yaml::from_reader(yaml_file).unwrap();
+
+            // Try to check if there's any key with 'BLJS10250'
+            if let Some(_value) = yaml_map.get("BLJS10250") {
+                // Read the path, and check if the game exist or not
+                let bljs_game_path = Path::new(_value);
+                let bljs_param_sfo_path = bljs_game_path.join("PS3_GAME").join("PARAM.sfo");
+                if Path::exists(&bljs_param_sfo_path) {
+                    fullboost_versions.BLJS10250 = true;
+                }
             }
         }
     }
-
+    
     Ok(fullboost_versions)
 }
 
