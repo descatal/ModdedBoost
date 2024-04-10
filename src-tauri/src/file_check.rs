@@ -1,9 +1,13 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
+use std::process::Stdio;
 
 use relative_path::RelativePath;
-use tauri::Manager;
+use tauri::{App, AppHandle, Manager};
+use tauri::path::BaseDirectory;
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::Command;
 
 use crate::file_handler::get_file_system_entries;
 use crate::os::{get_os, OS};
@@ -65,7 +69,7 @@ pub async fn check_game_versions(
     let mut sfo_exists = false;
     let mut eboot_exists = false;
     if let Some(_first_item) = npjb_sfo_paths.first() {
-        sfo_exists = true;
+        sfo_exists = check_sfo_title_id(&app, _first_item, "NPJB00512").await;
     }
     if let Some(_first_item) = npjb_eboot_paths.first() {
         eboot_exists = true;
@@ -80,15 +84,19 @@ pub async fn check_game_versions(
     let dev_hdd0_disc_relative_path = RelativePath::new("dev_hdd0/disc");
     let disc_directory_string = dev_hdd0_disc_relative_path.to_path(&rpcs3_directory).display().to_string();
     let disc_directory = &disc_directory_string;
+    let dev_hdd0_disc_sfo_relative_path = RelativePath::new("param.sfo");
+    let dev_hdd0_disc_sfo_directory = dev_hdd0_disc_sfo_relative_path.to_path("").display().to_string();
+    let disc_sfo_paths = get_file_system_entries(disc_directory, Some(&dev_hdd0_disc_sfo_directory));
+    
+    let mut bljs_exist = false;
+    if let Some(_first_item) = disc_sfo_paths.first() {
+        bljs_exist = check_sfo_title_id(&app, _first_item, "BLJS10250").await;
+    }
 
-    let bljs_disc_game_path = Path::new(disc_directory);
-    let bljs_disc_param_sfo_path = bljs_disc_game_path.join("PS3_GAME").join("PARAM.sfo");
-    if Path::exists(&bljs_disc_param_sfo_path) {
-        fullboost_versions.BLJS10250 = true;
-    } else {
-        // It might be possible the game was never installed (loaded from disc directly), 
-        // BLJS directory under "dev_hdd0/game/" or "dev_hdd0/disc" might not exist
-        // rpcs3 uses games.yml to record down disc games like these
+    // It might be possible the game was never installed (loaded from disc directly), 
+    // BLJS directory under "dev_hdd0/game/" or "dev_hdd0/disc" might not exist
+    // rpcs3 uses games.yml to record down disc games like these
+    if !bljs_exist {
         let game_yml_paths = get_file_system_entries(&rpcs3_directory, Some(r"games.yml"));
         if let Some(game_yaml_path) = game_yml_paths.first() {
             let game_yaml_path = game_yaml_path.clone();
@@ -107,7 +115,8 @@ pub async fn check_game_versions(
             }
         }
     }
-    
+
+    fullboost_versions.BLJS10250 = bljs_exist;
     Ok(fullboost_versions)
 }
 
@@ -117,4 +126,53 @@ pub async fn check_path_exist(
 ) -> Result<(bool), ()> {
     let path: &Path = Path::new(&full_path);
     Ok(path.exists())
+}
+
+async fn check_sfo_title_id(
+    app: &AppHandle,
+    sfo_path: &str,
+    match_str: &str
+) -> bool {
+    let sfo_name = match get_os() {
+        OS::Windows => "sfo.exe",
+        OS::Linux => "sfo",
+        OS::Macos => panic!("MacOs is not supported!"),
+    };
+    
+    let rclone_path = app.path()
+        .resolve(format!("tools/sfo/{}", sfo_name), BaseDirectory::AppData)
+        .expect("failed to resolve resource");
+
+    let mut cmd = Command::new(rclone_path);
+
+    cmd.arg("--query").arg("TITLE_ID").arg(format!("{}", sfo_path));
+    cmd.stdout(Stdio::piped());
+    
+    println!("{}", format!("{:?}", cmd).replace("\"", ""));
+
+    let mut child = cmd.spawn()
+        .expect("failed to spawn command");
+
+    let stdout = child.stdout.take()
+        .expect("child did not have a handle to stdout");
+    
+    // Ensure the child process is spawned in the runtime, so it can
+    // make progress on its own while we await for any output.
+    tokio::spawn(async move {
+        let status = child.wait().await
+            .expect("child process encountered an error");
+
+        println!("child status was: {}", status);
+    });
+
+    let mut reader = BufReader::new(stdout).lines();
+    
+    // Read the first line, if it matches the match_str passed in, return true
+    if let Some(line) = reader.next_line().await.unwrap_or(Some(String::new())) {
+        if line.contains(match_str) {
+            return true;
+        }
+    }
+    
+    false
 }

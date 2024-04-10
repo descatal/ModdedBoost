@@ -35,7 +35,8 @@
     "resources": [
       "resources/*"
     ],
-    "targets": "all"
+    "targets": "all",
+    "licenseFile": "LICENSE"
   },
   "identifier": "com.descatal.moddedboost",
   "plugins": {
