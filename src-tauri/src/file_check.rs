@@ -106,11 +106,9 @@ pub async fn check_game_versions(
 
             // Try to check if there's any key with 'BLJS10250'
             if let Some(_value) = yaml_map.get("BLJS10250") {
-                // Read the path, and check if the game exist or not
-                let bljs_game_path = Path::new(_value);
-                let bljs_param_sfo_path = bljs_game_path.join("PS3_GAME").join("PARAM.sfo");
-                if Path::exists(&bljs_param_sfo_path) {
-                    fullboost_versions.BLJS10250 = true;
+                let games_config_sfo_paths = get_file_system_entries(_value, Some(&dev_hdd0_disc_sfo_directory));
+                if let Some(_first_item) = games_config_sfo_paths.first() {
+                    bljs_exist = check_sfo_title_id(&app, _first_item, "BLJS10250").await;
                 }
             }
         }
