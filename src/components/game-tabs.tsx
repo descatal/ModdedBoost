@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import {Dispatch, SetStateAction, useEffect, useState} from "react";
 import {invoke} from "@tauri-apps/api/core";
 import {GameVersions, Metadata, transformPaths} from "@/lib/metadata.ts";
-import {dirname, join} from "@tauri-apps/api/path";
+import {dirname, homeDir, join} from "@tauri-apps/api/path";
 import FilesDialog from "@/components/dialogs/files/files-dialog.tsx";
 import IconButton from "@/components/common/icon-button.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
@@ -19,6 +19,7 @@ import i18n from "i18next";
 import {LocalFileMetadata, useAppStore} from "@/lib/store/app.ts";
 import {refreshLocalMetadataList} from "@/lib/refresh.ts";
 import {copyFileCommand} from "@/lib/update.ts";
+import {platform} from "@tauri-apps/plugin-os";
 
 type ConfigProps = {
   gameId: GameVersions,
@@ -59,7 +60,9 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   
   const launchGame = async (rpcs3Path: string, gameId: "BLJS10250" | "NPJB00512") => {
     if (gameId === "NPJB00512") {
-      const rpcs3Directory = await dirname(rpcs3Path)
+      const rpcs3Directory = platform() === "linux"
+        ? await join(await homeDir(), ".config", "rpcs3")
+        : await dirname(rpcs3Path)
       const rapFilePath = await join(rpcs3Directory, "dev_hdd0", "home", "00000001", "exdata", "JP0700-NPJB00512_00-FULLBOOST000100A.rap")
       await invoke<LocalFileMetadata[]>("get_file_metadata_command", {
         filePaths: [rapFilePath],
@@ -197,8 +200,11 @@ function GameTabs({gameId, metadata}: ConfigProps) {
       if (!(patchFileMd5[0]?.checksum ?? "" === gameMetadata!.base.patchMd5))
         return false;
 
-      const rpcs3Dir = await dirname(rpcs3Path)
-      const patchConfigPath = await join(rpcs3Dir, "config", "patch_config.yml");
+      const rpcs3Directory = platform() === "linux"
+        ? await join(await homeDir(), ".config", "rpcs3")
+        : await dirname(rpcs3Path)
+      
+      const patchConfigPath = await join(rpcs3Directory, "config", "patch_config.yml");
       const patchActivated = await invoke<boolean>("check_patch_activated", {
         patchPath: patchConfigPath
       });
@@ -226,9 +232,12 @@ function GameTabs({gameId, metadata}: ConfigProps) {
         const copySuccessful = await copyFileCommand(gameMetadata!.base.patchPath, gameMetadata!.base.patchRemotePath, remote)
         if (!copySuccessful) return false;
       }
+
+      const rpcs3Directory = platform() === "linux"
+        ? await join(await homeDir(), ".config", "rpcs3")
+        : await dirname(rpcs3Path)
       
-      const rpcs3Dir = await dirname(rpcs3Path)
-      const patchConfigPath = await join(rpcs3Dir, "config", "patch_config.yml");
+      const patchConfigPath = await join(rpcs3Directory, "config", "patch_config.yml");
       const activationResult = await invoke<boolean>("activate_patch", {
         patchPath: patchConfigPath
       });
@@ -302,7 +311,10 @@ function GameTabs({gameId, metadata}: ConfigProps) {
   
   useEffect(() => {
     const convertPaths = async () => {
-      const rpcs3Directory = await dirname(rpcs3Path)
+      const rpcs3Directory = platform() === "linux" 
+        ? await join(await homeDir(), ".config", "rpcs3")
+        : await dirname(rpcs3Path)
+        
       // Make a clone of the object as different game versions should have their own copy of their metadata.
       const result = await transformPaths(rpcs3Directory, cloneDeep(metadata), gameId);
       result.mod.files = result.mod.files.filter(map => map.versions.includes(gameId))

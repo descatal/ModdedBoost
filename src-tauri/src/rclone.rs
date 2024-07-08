@@ -4,8 +4,8 @@ use std::path::PathBuf;
 use std::process::Stdio;
 
 use configparser::ini::Ini;
-use tauri::{AppHandle, Manager};
 use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 
@@ -23,19 +23,34 @@ pub async fn rclone(
 ) -> Result<bool, ()> {
     let rclone_name = match get_os() {
         OS::Windows => "rclone-win.exe",
-        OS::Linux => "rclone-linux.exe",
-        OS::Macos => "rclone-mac.exe",
+        OS::Linux => "rclone-linux",
+        OS::Macos => "rclone-mac",
     };
 
-    let rclone_path = app.path()
-        .resolve(format!("tools/rclone/{}", rclone_name), BaseDirectory::AppData)
+    let rclone_path = app
+        .path()
+        .resolve(
+            format!("tools/rclone/{}", rclone_name),
+            BaseDirectory::AppData,
+        )
         .expect("failed to resolve resource");
 
-    let rclone_conf_path = app.path()
+    if get_os() == OS::Linux {
+        async_process::Command::new("chmod")
+            .arg("+x")
+            .arg(&rclone_path)
+            .output()
+            .await
+            .expect("chmod failed!");
+    }
+
+    let rclone_conf_path = app
+        .path()
         .resolve("tools/rclone.conf", BaseDirectory::AppData)
         .expect("failed to resolve resource");
 
-    let exclusion_list_path = app.path()
+    let exclusion_list_path = app
+        .path()
         .resolve("exclude_files.txt", BaseDirectory::Temp)
         .unwrap();
 
@@ -67,9 +82,23 @@ pub async fn rclone(
             .await
             .expect("api request failed!");
 
-        let cookie = res.headers().get("Set-Cookie").unwrap().to_str().unwrap().to_owned();
-        config.set(remote, "headers", Option::from(format!("Cookie,\"{}\"", cookie))).unwrap();
-        config.write(&rclone_conf_path).expect("rclone config save failed");
+        let cookie = res
+            .headers()
+            .get("Set-Cookie")
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_owned();
+        config
+            .set(
+                remote,
+                "headers",
+                Option::from(format!("Cookie,\"{}\"", cookie)),
+            )
+            .unwrap();
+        config
+            .write(&rclone_conf_path)
+            .expect("rclone config save failed");
     }
 
     let arg_pairs: Vec<&str> = additional_flags.split("--").collect();
@@ -79,7 +108,13 @@ pub async fn rclone(
     cmd.arg(command)
         .arg("--progress")
         .arg("--exclude-from")
-        .arg(&exclusion_list_path.clone().into_os_string().to_str().unwrap());
+        .arg(
+            &exclusion_list_path
+                .clone()
+                .into_os_string()
+                .to_str()
+                .unwrap(),
+        );
 
     for pair in arg_pairs {
         let trimmed = pair.trim();
@@ -104,10 +139,11 @@ pub async fn rclone(
     // the terminal if this process is invoked from the command line).
     cmd.stdout(Stdio::piped());
 
-    let mut child = cmd.spawn()
-        .expect("failed to spawn command");
+    let mut child = cmd.spawn().expect("failed to spawn command");
 
-    let stdout = child.stdout.take()
+    let stdout = child
+        .stdout
+        .take()
         .expect("child did not have a handle to stdout");
 
     let mut reader = BufReader::new(stdout).lines();
@@ -115,7 +151,9 @@ pub async fn rclone(
     // Ensure the child process is spawned in the runtime, so it can
     // make progress on its own while we await for any output.
     tokio::spawn(async move {
-        let status = child.wait().await
+        let status = child
+            .wait()
+            .await
             .expect("child process encountered an error");
 
         println!("child status was: {}", status);
@@ -123,16 +161,19 @@ pub async fn rclone(
 
     let mut execution_success = true;
     let event_name = format!("rclone_{}", listener_id).to_string();
-    app.emit(&event_name, "start").expect("failed to emit progress!");
+    app.emit(&event_name, "start")
+        .expect("failed to emit progress!");
     while let Some(line) = reader.next_line().await.unwrap_or(Some(String::new())) {
-        app.emit(&event_name, format!("\r{}", line)).expect("failed to emit progress!");
+        app.emit(&event_name, format!("\r{}", line))
+            .expect("failed to emit progress!");
         println!("\r{}", line);
 
         if line.to_lowercase().contains("errors:") {
             execution_success = false
         }
     }
-    app.emit(&event_name, "end").expect("failed to emit progress!");
+    app.emit(&event_name, "end")
+        .expect("failed to emit progress!");
 
     Ok(execution_success)
 }

@@ -1,9 +1,10 @@
 import {invoke} from "@tauri-apps/api/core";
-import {dirname, join} from "@tauri-apps/api/path";
+import {dirname, homeDir, join} from "@tauri-apps/api/path";
 import {useConfigStore} from "@/lib/store/config.ts";
 import {ProcessProps, useProcessListStore} from "@/lib/store/process.ts";
 import {ModFiles} from "@/lib/metadata.ts";
 import {refreshLocalMetadata} from "@/lib/refresh.ts";
+import {platform} from "@tauri-apps/plugin-os";
 
 const executeCommand = async (
   file: ModFiles, 
@@ -37,7 +38,10 @@ export const syncPsarcCommand = async (path: string, remotePath: string, remote:
   console.debug(path)
   const {rpcs3Path} = useConfigStore.getState()
 
-  const rpcs3Directory = await dirname(rpcs3Path);
+  const rpcs3Directory = platform() === "linux"
+    ? await join(await homeDir(), ".config", "rpcs3")
+    : await dirname(rpcs3Path)
+  
   const targetDirectory = await join(rpcs3Directory, ".moddedboost", remotePath)
   return await invoke<boolean>("rclone_command", {
     command: "sync",
@@ -61,7 +65,10 @@ export const updateFiles = async (fileProcess: ProcessProps, file: ModFiles) => 
       const executeResult = await executeCommand(file, copyFileCommand)
       if (executeResult) await refreshLocalMetadata(file.path, true, false)
     } else if (file.type === "psarc") {
-      const rpcs3Directory = await dirname(rpcs3Path);
+      const rpcs3Directory = platform() === "linux"
+        ? await join(await homeDir(), ".config", "rpcs3")
+        : await dirname(rpcs3Path)
+      
       const targetDirectory = await join(rpcs3Directory, ".moddedboost", file.remotePath)
       const psarcDestinationDirectory = await dirname(file.path)
 

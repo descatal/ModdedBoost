@@ -1,7 +1,7 @@
+use crate::os::OS;
 use std::ffi::OsStr;
 use std::path::Path;
 use walkdir::WalkDir;
-use crate::os::OS;
 
 #[tauri::command]
 pub fn get_file_system_entries(full_path: &str, file_path_filter: Option<&str>) -> Vec<String> {
@@ -11,7 +11,11 @@ pub fn get_file_system_entries(full_path: &str, file_path_filter: Option<&str>) 
         .into_iter()
         .filter_map(|file| file.ok())
         .filter(|file| match &file_path_filter {
-            Some(filter) => file.path().to_string_lossy().to_lowercase().contains(filter),
+            Some(filter) => file
+                .path()
+                .to_string_lossy()
+                .to_lowercase()
+                .contains(filter),
             None => true,
         })
     {
@@ -21,8 +25,7 @@ pub fn get_file_system_entries(full_path: &str, file_path_filter: Option<&str>) 
     matched_files
 }
 
-pub fn get_rpcs3_os(full_path: &str) -> Result<OS, ()>
-{
+pub fn get_rpcs3_os(full_path: &str) -> Result<OS, ()> {
     let path: &Path = Path::new(full_path);
     if !path.exists() {
         return Err(());
@@ -36,7 +39,7 @@ pub fn get_rpcs3_os(full_path: &str) -> Result<OS, ()>
                 "exe" => OS::Windows,
                 "appimage" => OS::Linux,
                 "app" => OS::Macos,
-                _ => return Err(())
+                _ => return Err(()),
             }
         }
         None => return Err(()),

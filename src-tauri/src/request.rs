@@ -1,11 +1,8 @@
-use tauri::AppHandle;
 use reqwest;
+use tauri::AppHandle;
 
 #[tauri::command]
-pub async fn get_is_success(
-    app: AppHandle,
-    remote: &str,
-) -> Result<bool, ()> {
+pub async fn get_is_success(app: AppHandle, remote: &str) -> Result<bool, ()> {
     let response = reqwest::get(remote).await;
 
     return match response {
@@ -16,6 +13,6 @@ pub async fn get_is_success(
                 Ok(false)
             }
         }
-        Err(_) => Ok(false)
+        Err(_) => Ok(false),
     };
 }

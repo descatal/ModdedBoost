@@ -3,23 +3,35 @@ use std::fs::{create_dir_all, metadata};
 use std::path::Path;
 
 use relative_path::RelativePath;
-use tauri::{App, AppHandle};
+use tauri::{App, AppHandle, Manager};
 
 use crate::file_handler::get_file_system_entries;
+use crate::os::{get_os, OS};
 use crate::psarc::unpack_psarc;
 use crate::rpcs3::validate_rpcs3_executable;
 
 #[tauri::command]
-pub async fn check_initialized(
-    full_path: &str
-) -> Result<bool, ()> {
-    let rpcs3_path = Path::new(full_path);
-    let rpcs3_directory = rpcs3_path.parent().unwrap();
+pub async fn check_initialized(app: AppHandle, full_path: &str) -> Result<bool, ()> {
+    let rpcs3_directory = match get_os() {
+        OS::Windows => Path::new(full_path).parent().unwrap(),
+        OS::Linux => &*RelativePath::new(".config/rpcs3").to_path(
+            &app.path()
+                .home_dir()
+                .unwrap()
+                .as_path()
+                .display()
+                .to_string(),
+        ),
+        OS::Macos => panic!("Not supported"),
+    };
 
     let dev_hdd0_relative_path = RelativePath::new("dev_hdd0");
-    let game_directory_string = dev_hdd0_relative_path.to_path(&rpcs3_directory).display().to_string();
+    let game_directory_string = dev_hdd0_relative_path
+        .to_path(&rpcs3_directory)
+        .display()
+        .to_string();
     let game_directory = &game_directory_string;
-    
+
     let cache_path_str = rpcs3_directory.join(".moddedboost").join("psarc");
 
     let required_folders = vec![
@@ -31,7 +43,7 @@ pub async fn check_initialized(
         "patch_06_00",
     ];
 
-    // Append a .psarc to the items in required_folders 
+    // Append a .psarc to the items in required_folders
     // Needs to be in Vec<&str>
     let psarc_files = required_folders
         .iter()
@@ -47,8 +59,11 @@ pub async fn check_initialized(
         let expected_path = relative_path.to_path(&cache_path_str);
 
         // Checks if the folder path exists, and if there's a file called PATCH.TBL in the folder if there's an corresponding psarc file in either BLJS or NPJB folders
-        if !Path::exists(&expected_path) || (patches_path.contains_key(format!("{}.psarc", expected_folder).as_str()) && !Path::exists(&expected_path.join("PATCH.TBL"))) {
-            return Ok(false)
+        if !Path::exists(&expected_path)
+            || (patches_path.contains_key(format!("{}.psarc", expected_folder).as_str())
+                && !Path::exists(&expected_path.join("PATCH.TBL")))
+        {
+            return Ok(false);
         }
     }
 
@@ -56,18 +71,25 @@ pub async fn check_initialized(
 }
 
 #[tauri::command]
-pub async fn initialize(
-    app: AppHandle,
-    rpcs3_executable: &str,
-) -> Result<(), ()> {
+pub async fn initialize(app: AppHandle, rpcs3_executable: &str) -> Result<(), ()> {
     let valid_rpcs3 = validate_rpcs3_executable(rpcs3_executable).await.unwrap();
 
     if !valid_rpcs3 {
         return Err(());
     }
 
-    let rpcs3_path = Path::new(rpcs3_executable);
-    let rpcs3_directory = rpcs3_path.parent().unwrap();
+    let rpcs3_directory = match get_os() {
+        OS::Windows => Path::new(rpcs3_executable).parent().unwrap(),
+        OS::Linux => &*RelativePath::new(".config/rpcs3").to_path(
+            &app.path()
+                .home_dir()
+                .unwrap()
+                .as_path()
+                .display()
+                .to_string(),
+        ),
+        OS::Macos => panic!("Not supported"),
+    };
 
     // Path to the cache folder is the ".moddedboost" folder.
     let cache_path_str = rpcs3_directory.join(".moddedboost").join("psarc");
@@ -77,7 +99,10 @@ pub async fn initialize(
 
     // Check if there are existing game versions in the game, if yes automatically do migrations.
     let dev_hdd0_relative_path = RelativePath::new("dev_hdd0");
-    let game_directory_string = dev_hdd0_relative_path.to_path(&rpcs3_directory).display().to_string();
+    let game_directory_string = dev_hdd0_relative_path
+        .to_path(&rpcs3_directory)
+        .display()
+        .to_string();
     let game_directory = &game_directory_string;
 
     let files_to_extract = vec![
@@ -93,36 +118,55 @@ pub async fn initialize(
 
     for extract_file_name in files_to_extract {
         let extract_file_name_path = Path::new(extract_file_name);
-        let extract_file_stem = extract_file_name_path.file_stem().unwrap().to_str().unwrap();
-        let extract_directory = cache_path.join(extract_file_stem).to_str().unwrap().to_owned();
+        let extract_file_stem = extract_file_name_path
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap();
+        let extract_directory = cache_path
+            .join(extract_file_stem)
+            .to_str()
+            .unwrap()
+            .to_owned();
         create_dir_all(&extract_directory.clone()).unwrap();
 
         if patches_path.contains_key(extract_file_name) {
             let path = patches_path.get(extract_file_name).unwrap();
-            unpack_psarc(&app, &path, &extract_directory.clone()).await.unwrap();
+            unpack_psarc(&app, &path, &extract_directory.clone())
+                .await
+                .unwrap();
         }
     }
 
     Ok(())
 }
 
-fn get_game_files(
-    game_directory: &str,
-    file_names: Vec<&str>
-) -> HashMap<String, String> {
-    let npjb_files: Vec<String> = get_extract_files(game_directory, "npjb00512/usrdir", file_names.clone());
-    let bljs_files: Vec<String> = get_extract_files(game_directory, "bljs10250/usrdir", file_names.clone());
+fn get_game_files(game_directory: &str, file_names: Vec<&str>) -> HashMap<String, String> {
+    let npjb_files: Vec<String> =
+        get_extract_files(game_directory, "npjb00512/usrdir", file_names.clone());
+    let bljs_files: Vec<String> =
+        get_extract_files(game_directory, "bljs10250/usrdir", file_names.clone());
 
-    let map: HashMap<String, String> = npjb_files.into_iter().filter_map(|s| {
-        Path::new(&s).file_name().and_then(|os_str| os_str.to_str()).map(|file_name| (file_name.to_string(), s.clone()))
-    }).collect();
+    let map: HashMap<String, String> = npjb_files
+        .into_iter()
+        .filter_map(|s| {
+            Path::new(&s)
+                .file_name()
+                .and_then(|os_str| os_str.to_str())
+                .map(|file_name| (file_name.to_string(), s.clone()))
+        })
+        .collect();
 
     // Create a new vector to store the results of the inner join
     let mut patches_path: HashMap<String, String> = map.clone();
 
     // Iterate over the second vector and check any item exists in the HashMap
     for bljs_path in &bljs_files {
-        let file_name = Path::new(&bljs_path).file_name().and_then(|os_str| os_str.to_str()).map(|file_name| file_name.to_string()).unwrap();
+        let file_name = Path::new(&bljs_path)
+            .file_name()
+            .and_then(|os_str| os_str.to_str())
+            .map(|file_name| file_name.to_string())
+            .unwrap();
         if map.contains_key(&file_name) {
             let npjb_path = map.get(&file_name).unwrap();
             let npjb_metadata = metadata(&npjb_path).unwrap();
@@ -163,7 +207,6 @@ fn get_extract_files(
         if let Some(file_name) = path_file_name {
             let file_name_str = file_name.to_str().unwrap_or("");
             if filter_file_names.contains(&file_name_str) {
-
                 // let path_string = file_paths.to_string();
                 extract_file_paths.push(file_paths.to_string())
             }

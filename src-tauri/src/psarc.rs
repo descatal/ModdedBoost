@@ -1,28 +1,41 @@
+use crate::os::{get_os, OS};
 use std::process::Stdio;
-use tauri::{AppHandle, Manager};
 use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
-use crate::os::{get_os, OS};
 
 pub async fn unpack_psarc(
     app: &AppHandle,
     source_path: &str,
-    destination_path: &str
+    destination_path: &str,
 ) -> Result<(), ()> {
     let rclone_name = match get_os() {
-        OS::Windows => "BoostStudio.Console-win-x86.exe",
-        OS::Linux => panic!("Not supported"),
-        OS::Macos => panic!("Not supported")
+        OS::Windows => "BoostStudio.Console.exe",
+        OS::Linux => "BoostStudio.Console",
+        OS::Macos => panic!("Not supported"),
     };
 
-    let booststudio_path = app.path()
-        .resolve(format!("tools/booststudio/{}", rclone_name), BaseDirectory::AppData)
+    let booststudio_path = app
+        .path()
+        .resolve(
+            format!("tools/booststudio/{}", rclone_name),
+            BaseDirectory::AppData,
+        )
         .expect("failed to resolve resource");
+
+    if get_os() == OS::Linux {
+        async_process::Command::new("chmod")
+            .arg("+x")
+            .arg(&booststudio_path)
+            .output()
+            .await
+            .expect("chmod failed!");
+    }
 
     println!("{}", format!("{}", source_path));
 
-    let mut cmd = Command::new(booststudio_path);
+    let mut cmd = Command::new(&booststudio_path);
     cmd.arg("psarc")
         .arg("unpack")
         .arg("--input")
@@ -33,10 +46,11 @@ pub async fn unpack_psarc(
 
     println!("{}", format!("{:?}", cmd).replace("\"", ""));
 
-    let mut child = cmd.spawn()
-        .expect("failed to spawn command");
+    let mut child = cmd.spawn().expect("failed to spawn command");
 
-    let stdout = child.stdout.take()
+    let stdout = child
+        .stdout
+        .take()
         .expect("child did not have a handle to stdout");
 
     let mut reader = BufReader::new(stdout).lines();
@@ -49,7 +63,9 @@ pub async fn unpack_psarc(
     // Ensure the child process is spawned in the runtime, so it can
     // make progress on its own while we await for any output.
     tokio::spawn(async move {
-        let status = child.wait().await
+        let status = child
+            .wait()
+            .await
             .expect("child process encountered an error");
 
         println!("child status was: {}", status);
@@ -62,17 +78,30 @@ pub async fn pack_psarc(
     app: &AppHandle,
     source_directory_path: &str,
     output_file_name: &str,
-    destination_directory_path: &str
+    destination_directory_path: &str,
 ) -> Result<(), ()> {
     let rclone_name = match get_os() {
-        OS::Windows => "BoostStudio.Console-win-x86.exe",
-        OS::Linux => panic!("Not supported"),
-        OS::Macos => panic!("Not supported")
+        OS::Windows => "BoostStudio.Console.exe",
+        OS::Linux => "BoostStudio.Console",
+        OS::Macos => panic!("Not supported"),
     };
 
-    let booststudio_path = app.path()
-        .resolve(format!("tools/booststudio/{}", rclone_name), BaseDirectory::AppData)
+    let booststudio_path = app
+        .path()
+        .resolve(
+            format!("tools/booststudio/{}", rclone_name),
+            BaseDirectory::AppData,
+        )
         .expect("failed to resolve resource");
+
+    if get_os() == OS::Linux {
+        async_process::Command::new("chmod")
+            .arg("+x")
+            .arg(&booststudio_path)
+            .output()
+            .await
+            .expect("chmod failed!");
+    }
 
     let input_arg = format!("--input {}", source_directory_path);
     let output_arg = format!("--output {}", destination_directory_path);
@@ -91,10 +120,11 @@ pub async fn pack_psarc(
 
     println!("{}", format!("{:?}", cmd).replace("\"", ""));
 
-    let mut child = cmd.spawn()
-        .expect("failed to spawn command");
+    let mut child = cmd.spawn().expect("failed to spawn command");
 
-    let stdout = child.stdout.take()
+    let stdout = child
+        .stdout
+        .take()
         .expect("child did not have a handle to stdout");
 
     let mut reader = BufReader::new(stdout).lines();
@@ -102,7 +132,9 @@ pub async fn pack_psarc(
     // Ensure the child process is spawned in the runtime, so it can
     // make progress on its own while we await for any output.
     tokio::spawn(async move {
-        let status = child.wait().await
+        let status = child
+            .wait()
+            .await
             .expect("child process encountered an error");
 
         println!("child status was: {}", status);

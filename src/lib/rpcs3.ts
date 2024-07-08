@@ -6,8 +6,8 @@ const REGEX_CHINESE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff
 export async function checkRpcs3Validity(rpcs3Path: string): Promise<boolean> {
   const {setOpenRunningProcessModal, setOpenInvalidPathModal} = useAppStore.getState()
 
-  const hasChinese = rpcs3Path.match(REGEX_CHINESE);
-  if (hasChinese) {
+  const hasChineseCharacters = rpcs3Path.match(REGEX_CHINESE);
+  if (hasChineseCharacters) {
     setOpenInvalidPathModal(true)
     return false;
   } else {

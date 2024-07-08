@@ -1,16 +1,16 @@
-use tauri::{AppHandle, Manager};
-use tauri::path::BaseDirectory;
 use dircpy::*;
+use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
 
 #[tauri::command]
-pub fn initialize_resources(
-    app: AppHandle
-) -> Result<(), ()> {
-    let resources_path = app.path()
+pub fn initialize_resources(app: AppHandle) -> Result<(), ()> {
+    let resources_path = app
+        .path()
         .resolve("resources", BaseDirectory::Resource)
         .expect("failed to resolve resource");
 
-    let appdata_path = app.path()
+    let appdata_path = app
+        .path()
         .resolve("", BaseDirectory::AppData)
         .expect("failed to resolve resource");
 
@@ -20,6 +20,6 @@ pub fn initialize_resources(
         .with_exclude_filter("icon.ico")
         .run()
         .expect("dir copy failed");
-    
+
     Ok(())
 }

@@ -12,7 +12,7 @@ pub fn auto_find_path_and_run_game(full_path: &str, game_type: &str) {
         "bljs" => r"BLJS10250\USRDIR\EBOOT.bin",
         _ => "",
     };
-    
+
     // find by game_type_path
     // 1. we don't need the rpcs3.exe in path, so we need remove it
     let find_eboot_path_string: &String = &full_path.replace("rpcs3.exe", "");
@@ -69,6 +69,6 @@ pub async fn launch_game(full_path: &str, game_type: &str) -> Result<(), ()> {
     } else {
         println!("Unsupported OS type")
     }
-    
+
     Ok(())
 }
