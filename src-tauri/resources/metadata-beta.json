@@ -1,0 +1,139 @@
+{
+  "base": {
+    "path": "dev_hdd0/game/{GAME_ID}",
+    "remotePath": "base_folders/{GAME_ID}",
+    "dlcPath": "dev_hdd0/game/NPJB00512/USRDIR/dlc",
+    "dlcRemotePath": "base_folders/dlc",
+    "dlcNPJBRemoteBasePath": "base_folders/NPJB00512",
+    "dlcNPJBBasePath": "dev_hdd0/game/NPJB00512",
+    "patchPath": "patches/imported_patch.yml",
+    "patchRemotePath": "patches/imported_patch.yml",
+    "patchMd5": "4b5356877c8707f2d059a8eb40c47b80",
+    "excludePaths": [
+      "/USRDIR/dlc/**",
+      "/USRDIR/patch_01_00.psarc",
+      "/USRDIR/patch_02_00.psarc",
+      "/USRDIR/patch_03_00.psarc",
+      "/USRDIR/patch_04_00.psarc",
+      "/USRDIR/patch_05_00.psarc",
+      "/USRDIR/patch_06_00.psarc",
+      "/USRDIR/stream.psarc",
+      "/USRDIR/sys.psarc",
+      "/USRDIR/EXFB.psarc",
+      "/USRDIR/EBOOT.BIN"
+    ]
+  },
+  "mod": {
+    "modVersion": "0.1.1-beta",
+    "files": [
+      {
+        "versions": [
+          "NPJB00512"
+        ],
+        "name": "EBOOT",
+        "path": "dev_hdd0/game/{GAME_ID}/USRDIR/EBOOT.BIN",
+        "md5": "0cd91049b84ffb65d82e35dc069073df",
+        "remotePath": "patches/{GAME_ID}/EBOOT.BIN",
+        "type": "file"
+      },
+      {
+        "versions": [
+          "BLJS10250"
+        ],
+        "name": "EBOOT",
+        "path": "dev_hdd0/game/{GAME_ID}/USRDIR/EBOOT.BIN",
+        "md5": "1096756db1adf3d0e0a51e38c22f5157",
+        "remotePath": "patches/{GAME_ID}/EBOOT.BIN",
+        "type": "file"
+      },
+      {
+        "versions": [
+          "NPJB00512",
+          "BLJS10250"
+        ],
+        "name": "SPRX",
+        "path": "dev_hdd0/customSPRX/FBmod.sprx",
+        "md5": "9eba42de980cfafe16b4828bca9721df",
+        "remotePath": "patches/FBmod.sprx",
+        "type": "file"
+      },
+      {
+        "versions": [
+          "NPJB00512",
+          "BLJS10250"
+        ],
+        "name": "patch",
+        "path": "patches/imported_patch.yml",
+        "md5": "4b5356877c8707f2d059a8eb40c47b80",
+        "remotePath": "patches/imported_patch.yml",
+        "type": "file"
+      },
+      {
+        "versions": [
+          "NPJB00512",
+          "BLJS10250"
+        ],
+        "name": "patch_01_00.psarc",
+        "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_01_00.psarc",
+        "md5": "2dd1c988ae821367749e59e0a5e36bdd",
+        "remotePath": "psarc/patch_01_00",
+        "type": "psarc"
+      },
+      {
+        "versions": [
+          "NPJB00512",
+          "BLJS10250"
+        ],
+        "name": "patch_02_00.psarc",
+        "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_02_00.psarc",
+        "md5": "e97d5702ef91486b965eee36f939801d",
+        "remotePath": "psarc/patch_02_00",
+        "type": "psarc"
+      },
+      {
+        "versions": [
+          "NPJB00512",
+          "BLJS10250"
+        ],
+        "name": "patch_03_00.psarc",
+        "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_03_00.psarc",
+        "md5": "b3fd6d3e290a12c2d18e309b9fef2498",
+        "remotePath": "psarc/patch_03_00",
+        "type": "psarc"
+      },
+      {
+        "versions": [
+          "NPJB00512",
+          "BLJS10250"
+        ],
+        "name": "patch_04_00.psarc",
+        "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_04_00.psarc",
+        "md5": "b31eb1b9837c4a88c5ccdbe0dc82c986",
+        "remotePath": "psarc/patch_04_00",
+        "type": "psarc"
+      },
+      {
+        "versions": [
+          "NPJB00512",
+          "BLJS10250"
+        ],
+        "name": "patch_05_00.psarc",
+        "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_05_00.psarc",
+        "md5": "cb364890f725c773c35fa0ee9f9b203c",
+        "remotePath": "psarc/patch_05_00",
+        "type": "psarc"
+      },
+      {
+        "versions": [
+          "NPJB00512",
+          "BLJS10250"
+        ],
+        "name": "patch_06_00.psarc",
+        "path": "dev_hdd0/game/{GAME_ID}/USRDIR/patch_06_00.psarc",
+        "md5": "94fd9ced43af68be720ef9c7c0eadb7b",
+        "remotePath": "psarc/patch_06_00",
+        "type": "psarc"
+      }
+    ]
+  }
+}

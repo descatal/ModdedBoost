@@ -68,7 +68,6 @@ function GameTabs({gameId, metadata}: ConfigProps) {
         filePaths: [rapFilePath],
         ignoreModtime: true,
       }).then(rapFileMetadata => {
-        console.log(rapFileMetadata[0].checksum)
         if (!rapFileMetadata.length || rapFileMetadata[0].checksum != "4c266afc905455958a38a9c5c8590634") {
           setOpenInvalidRapFileModal(true)
         }

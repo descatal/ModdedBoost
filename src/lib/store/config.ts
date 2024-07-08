@@ -13,6 +13,7 @@ type Theme = "dark" | "light" | "system"
 
 export interface ConfigStore {
   theme: Theme;
+  beta: boolean;
   language: string;
   rpcs3Path: string;
   mirrorGroup: MirrorGroup;
@@ -23,6 +24,7 @@ export interface ConfigStore {
   }[];
   lastSelectedTab: string,
   setTheme: (theme: Theme) => Promise<void>;
+  setBeta: (beta: boolean) => Promise<void>;
   setLanguage: (language: string) => Promise<void>;
   setRpcs3Path: (rpcs3Path: string) => Promise<void>;
   setFilesMetadataCache: (fileMetadata: { path: string, lastModifiedEpoch: number, md5: string }[]) => Promise<void>;
@@ -33,6 +35,7 @@ export interface ConfigStore {
 
 export const useConfigStore = createWithEqualityFn<ConfigStore>()((set) => ({
   theme: (localStorage.getItem(storageKey) as Theme) || DEFAULT_THEME,
+  beta: false,
   language: i18n.language || DEFAULT_LANGUAGE,
   rpcs3Path: "",
   filesMetadataCache: [],
@@ -46,6 +49,12 @@ export const useConfigStore = createWithEqualityFn<ConfigStore>()((set) => ({
     set({theme: theme});
     localStorage.setItem(storageKey, theme);
     await tauriStore.set("theme", theme);
+    await tauriStore.save();
+  },
+  setBeta: async (beta) => {
+    set({beta: beta});
+    localStorage.setItem(storageKey, String(beta));
+    await tauriStore.set("beta", beta);
     await tauriStore.save();
   },
   setLanguage: async (language) => {
@@ -79,6 +88,7 @@ export const useConfigStore = createWithEqualityFn<ConfigStore>()((set) => ({
 
 const hydrate = async () => {
   const theme = await tauriStore.get("theme");
+  const beta = await tauriStore.get("beta");
   const language = await tauriStore.get("language");
   const rpcs3Path = await tauriStore.get("rpcs3_path");
   const fileMetadataPath = await tauriStore.get("file_metadata");
@@ -86,6 +96,7 @@ const hydrate = async () => {
   const lastSelectedTab = await tauriStore.get("lastSelectedTab");
 
   const parsedTheme = z.enum(["dark", "light", "system"]).safeParse(theme);
+  const parsedBeta = z.boolean().safeParse(beta);
   const parsedLanguage = z.string().safeParse(language);
   const parsedRpcs3Path = z.string().safeParse(rpcs3Path);
   const parsedMirrorGroup = z.custom<MirrorGroup>().safeParse(mirrorGroup);
@@ -100,6 +111,10 @@ const hydrate = async () => {
 
   if (parsedTheme.success) {
     useConfigStore.setState({theme: parsedTheme.data});
+  }
+
+  if (parsedBeta.success) {
+    useConfigStore.setState({beta: parsedBeta.data});
   }
 
   if (parsedLanguage.success) {

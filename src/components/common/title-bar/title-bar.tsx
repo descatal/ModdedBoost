@@ -13,12 +13,15 @@ import {check} from "@tauri-apps/plugin-updater";
 import {useAppStore} from "@/lib/store/app.ts";
 import {toast} from "sonner";
 import i18n from "i18next";
+import {Badge} from "@/components/ui/badge.tsx";
+import {useConfigStore} from "@/lib/store/config.ts";
 
 const TitleBar = () => {
   const {t} = useTranslation();
   const [isWindowMaximized, setIsWindowMaximized] = useState(false);
   const [isChecking, setIsChecking] = useState(false)
   const {setOpenUpdateModal} = useAppStore()
+  const {beta} = useConfigStore.getState();
   
   const updateIsWindowMaximized = useCallback(async () => {
     const resolvedPromise: boolean = await getCurrent().isMaximized();
@@ -65,6 +68,13 @@ const TitleBar = () => {
          className={"h-10 flex justify-end fixed top-2 left-2 right-2"}>
       <div className={"flex"}>
         <div className="flex items-center justify-between">
+          <>
+            {
+              beta ?       
+                <Badge className={"bg-primary"}>{t("BETA")}</Badge>
+                : <></>
+            }
+          </>
           <IconButton
             buttonVariant={"ghost"}
             buttonDescription={t("Update")}

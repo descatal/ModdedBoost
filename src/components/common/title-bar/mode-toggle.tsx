@@ -4,17 +4,33 @@ import IconButton from "@/components/common/icon-button.tsx";
 import {MoonIcon, SunIcon} from "@radix-ui/react-icons";
 import {useConfigStore} from "@/lib/store/config.ts";
 import {shallow} from "zustand/shallow";
+import {useEffect, useState} from "react";
 
 export function ModeToggle() {
   const {t} = useTranslation();
+  const [ betaCount, setBetaCount ] = useState(0);
 
-  const {setTheme} = useConfigStore(
+  const {setTheme, beta, setBeta} = useConfigStore(
     (state) => ({
       theme: state.theme,
       setTheme: state.setTheme,
+      beta: state.beta,
+      setBeta: state.setBeta
     }),
     shallow
   );
+
+  useEffect(() => {
+    const toggleBeta = async () => {
+      await setBeta(!beta)
+    };
+    
+    if (betaCount >= 5) {
+      setBetaCount(0)
+      toggleBeta().catch(console.error)
+      window.location.reload();
+    }
+  }, [betaCount])
 
   return (
     <DropdownMenu>
@@ -45,7 +61,10 @@ export function ModeToggle() {
         <DropdownMenuItem onClick={() => setTheme("dark")}>
           {t("Dark")}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem onClick={() => {
+          setBetaCount(betaCount + 1)
+          setTheme("system")
+        }}>
           {t("System")}
         </DropdownMenuItem>
       </DropdownMenuContent>

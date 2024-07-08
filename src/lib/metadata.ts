@@ -2,11 +2,15 @@ import {appDataDir, join} from "@tauri-apps/api/path";
 import {readTextFile} from "@tauri-apps/plugin-fs";
 import {updateMetadata} from "@/lib/remote.ts";
 import {cloneDeep} from "lodash";
+import {useConfigStore} from "@/lib/store/config.ts";
 
 export async function loadMetadata(getRemote: boolean) {
   await updateMetadata(getRemote);
 
-  const metadataPath = await join(await appDataDir(), 'metadata.json');
+  const { beta} = useConfigStore.getState()
+  const metadataJson = beta ? "metadata-beta.json" : "metadata.json";
+  
+  const metadataPath = await join(await appDataDir(), metadataJson);
   const metadata: Metadata = JSON.parse(await readTextFile(metadataPath))
 
   return metadata

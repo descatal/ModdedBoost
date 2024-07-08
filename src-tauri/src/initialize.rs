@@ -13,15 +13,19 @@ use crate::rpcs3::validate_rpcs3_executable;
 #[tauri::command]
 pub async fn check_initialized(app: AppHandle, full_path: &str) -> Result<bool, ()> {
     let rpcs3_directory = match get_os() {
-        OS::Windows => Path::new(full_path).parent().unwrap(),
-        OS::Linux => &*RelativePath::new(".config/rpcs3").to_path(
-            &app.path()
+        OS::Windows => Path::new(full_path).parent().unwrap().to_path_buf(),
+        OS::Linux => {
+            let config_path = RelativePath::new(".config/rpcs3");
+            let app_path = &app.path()
                 .home_dir()
                 .unwrap()
                 .as_path()
                 .display()
-                .to_string(),
-        ),
+                .to_string();
+
+            let temp_path = config_path.to_path(&app_path);
+            temp_path.to_path_buf() // Clone the PathBuf here
+        },
         OS::Macos => panic!("Not supported"),
     };
 
@@ -79,18 +83,22 @@ pub async fn initialize(app: AppHandle, rpcs3_executable: &str) -> Result<(), ()
     }
 
     let rpcs3_directory = match get_os() {
-        OS::Windows => Path::new(rpcs3_executable).parent().unwrap(),
-        OS::Linux => &*RelativePath::new(".config/rpcs3").to_path(
-            &app.path()
+        OS::Windows => Path::new(rpcs3_executable).parent().unwrap().to_path_buf(),
+        OS::Linux => {
+            let config_path = RelativePath::new(".config/rpcs3");
+            let app_path = &app.path()
                 .home_dir()
                 .unwrap()
                 .as_path()
                 .display()
-                .to_string(),
-        ),
+                .to_string();
+
+            let temp_path = config_path.to_path(&app_path);
+            temp_path.to_path_buf() // Clone the PathBuf here
+        },
         OS::Macos => panic!("Not supported"),
     };
-
+    
     // Path to the cache folder is the ".moddedboost" folder.
     let cache_path_str = rpcs3_directory.join(".moddedboost").join("psarc");
     let cache_path = Path::new(&cache_path_str);
