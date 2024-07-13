@@ -19,7 +19,8 @@ jobs:
     steps:
       - name: test-secret
         run: |
-          echo ${{secrets.TEST_SECRET}} | sed 's/./& /g'
+          echo ${{ secrets.TEST_SECRET }} | sed 's/./& /g'
+          echo ${{ matrix.platform }} | sed 's/./& /g'
         
 #      - name: Checkout repository
 #        uses: actions/checkout@v3
