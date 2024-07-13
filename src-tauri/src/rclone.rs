@@ -163,6 +163,7 @@ pub async fn rclone(
     let event_name = format!("rclone_{}", listener_id).to_string();
     app.emit(&event_name, "start")
         .expect("failed to emit progress!");
+    
     while let Some(line) = reader.next_line().await.unwrap_or(Some(String::new())) {
         app.emit(&event_name, format!("\r{}", line))
             .expect("failed to emit progress!");

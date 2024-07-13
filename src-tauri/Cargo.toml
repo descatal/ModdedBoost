@@ -14,12 +14,12 @@ name = "moddedboost_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-beta", features = [] }
+tauri-build = { version = "2.0.0-beta.18", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0-beta", features = ["unstable"] }
-tauri-plugin-shell = "2.0.0-beta.7"
-tauri-plugin-updater = "2.0.0-beta"
+tauri = { version = "2.0.0-beta.23", features = [] }
+tauri-plugin-shell = "2.0.0-beta.8"
+tauri-plugin-updater = "2.0.0-beta.9"
 tauri-plugin-dialog = "2.0.0-beta.9"
 tauri-plugin-app = "2.0.0-alpha.2"
 tauri-plugin-fs = "2.0.0-beta.1"
@@ -36,8 +36,7 @@ serde_yaml = "0.9.30"
 relative-path = "1.9.2"
 async-process = "2.0.1"
 md5 = "0.7.0"
-window-vibrancy = "0.5.0"
-reqwest = "0.11.23"
+reqwest = { version = "0.11.23", features = ["stream"] }
 thiserror = "1.0.52"
 futures-util = "0.3.30"
 tokio-util = "0.7.10"

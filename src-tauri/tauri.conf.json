@@ -36,7 +36,10 @@
       "resources/*"
     ],
     "targets": "all",
-    "licenseFile": "LICENSE"
+    "licenseFile": "LICENSE",
+    "externalBin": [
+      "bin/booststudio/booststudio"
+    ]
   },
   "identifier": "com.descatal.moddedboost",
   "plugins": {

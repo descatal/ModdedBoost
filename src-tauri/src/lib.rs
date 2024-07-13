@@ -2,10 +2,10 @@ use tauri::Manager;
 
 use crate::app_initialize::initialize_resources;
 use crate::commands::{
-    clear_cached_metadata_command, get_file_metadata_command, get_file_modified_epoch_command,
-    pack_psarc_command, rclone_command,
+    clear_cached_metadata_command, get_file_metadata_command, get_file_modified_epoch_command, rclone_command,
 };
 use crate::downloader::custom_downloader;
+use crate::psarc::{pack_psarc_command};
 use crate::file_check::{check_game_versions, check_path_exist};
 use crate::file_handler::get_file_system_entries;
 use crate::game::{auto_find_path_and_run_game, launch_game};
@@ -15,7 +15,6 @@ use crate::patches::{activate_patch, check_patch_activated};
 use crate::request::get_is_success;
 use crate::rpcs3::{check_rpcs3_running, validate_rpcs3_executable};
 use crate::updater::update_tauri;
-use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 mod app_initialize;
 mod commands;
@@ -39,12 +38,11 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
         .setup(|app| {
-            let window = app.get_window("main").unwrap();
-
             #[cfg(desktop)]
             app.handle()
                 .plugin(tauri_plugin_updater::Builder::new().build())?;
-
+            
+            // let window = app.get_window("main").unwrap();
             // #[cfg(target_os = "macos")]
             // apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
             //     .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
@@ -56,9 +54,12 @@ pub fn run() {
 
             Ok(())
         })
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_upload::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             notify,
             get_file_system_entries,
@@ -82,8 +83,6 @@ pub fn run() {
             activate_patch,
             get_is_success
         ])
-        .plugin(tauri_plugin_upload::init())
-        .plugin(tauri_plugin_store::Builder::default().build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

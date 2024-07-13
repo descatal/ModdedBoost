@@ -45,6 +45,16 @@
           "path": "$RESOURCE/**"
         }
       ]
+    },
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "cmd": "",
+          "name": "bin/booststudio/booststudio",
+          "sidecar": true
+        }
+      ]
     }
   ],
   "platforms": [
