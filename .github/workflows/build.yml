@@ -8,6 +8,7 @@ on:
 
 jobs:
   build-tauri:
+    environment: moddedboost
     permissions:
       contents: write
     strategy:
