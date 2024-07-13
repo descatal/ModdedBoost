@@ -18,47 +18,42 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
-      - name: test-secret
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: v2 -> v2/target
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+          cache-dependency-path: v2/package-lock.json
+
+      - name: Install apt dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
         run: |
-          echo ${{ secrets.TEST_SECRET }} | sed 's/./& /g'
-          echo ${{ matrix.platform }} | sed 's/./& /g'
-        
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#
-#      - name: Install Rust
-#        uses: dtolnay/rust-toolchain@stable
-#        with:
-#          toolchain: stable
-#
-#      - name: Rust cache
-#        uses: Swatinem/rust-cache@v2
-#        with:
-#          workspaces: v2 -> v2/target
-#
-#      - name: Install Node.js
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: "lts/*"
-#          cache-dependency-path: v2/package-lock.json
-#
-#      - name: Install apt dependencies (ubuntu only)
-#        if: matrix.platform == 'ubuntu-latest'
-#        run: |
-#          sudo apt-get update
-#          sudo apt install -y --no-install-recommends libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf
-#
-#      - name: Install pnpm
-#        run: npm install -g pnpm
-#
-#      - name: Install frontend dependencies
-#        run: pnpm install
-#
-#      - name: Build the app
-#        uses: tauri-apps/tauri-action@v0
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-#          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-#        with:
-#          releaseId: ${{ needs.create-release.outputs.release_id }}
+          sudo apt-get update
+          sudo apt install -y --no-install-recommends libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Build the app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          releaseId: ${{ needs.create-release.outputs.release_id }}
