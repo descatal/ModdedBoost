@@ -59,7 +59,7 @@ jobs:
           releaseId: ${{ needs.create-release.outputs.release_id }}
 
       - name: Upload artifacts (windows-x64)
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.platform == 'windows-latest' }}
         uses: actions/upload-artifact@v3
         with:
           name: moddedboost-alpha-windows-x64
@@ -67,7 +67,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload artifacts (linux-x64)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.platform == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v3
         with:
           name: moddedboost-alpha-linux-x64
