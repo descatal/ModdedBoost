@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: moddedboost-alpha-windows-x64
-          path: ./src-tauri/target/release/bundle
+          path: ./src-tauri/target/debug/bundle
           if-no-files-found: error
 
       - name: Upload artifacts (linux-x64)
@@ -72,5 +72,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: moddedboost-alpha-linux-x64
-          path: ./src-tauri/target/release/bundle
+          path: ./src-tauri/target/debug/bundle
           if-no-files-found: error
