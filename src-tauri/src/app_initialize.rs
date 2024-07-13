@@ -9,14 +9,14 @@ pub fn initialize_resources(app: AppHandle) -> Result<(), ()> {
         .resolve("resources", BaseDirectory::Resource)
         .expect("failed to resolve resource");
     
-    println!("Resource path: s{}", &resources_path);
+    println!("Resource path: s{}", &resources_path.display());
     
     let appdata_path = app
         .path()
         .resolve("", BaseDirectory::AppData)
         .expect("failed to resolve resource");
 
-    println!("AppData path: {}", &appdata_path);
+    println!("AppData path: {}", &appdata_path.display());
     
     // Copy recursively, only including certain files:
     CopyBuilder::new(resources_path, appdata_path)
