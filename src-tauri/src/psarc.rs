@@ -38,7 +38,7 @@ pub async fn unpack_psarc(
                 println!("{}", line_str);
             }
         }
-    }).await.expect("");
+    }).await.expect("Execution failed!");
 
     Ok(())
 }
@@ -82,7 +82,7 @@ pub async fn pack_psarc_command(
                 println!("{}", line_str);
             }
         }
-    }).await.expect("");;
+    }).await.expect("Execution failed!");
 
     Ok(())
 }
